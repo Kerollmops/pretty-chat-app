@@ -172,6 +172,7 @@ const ChatInterface = () => {
                     placeholder="Ask anything about the content of the indexes"
                     className="resize-none min-h-[60px] border-0 focus:ring-0 focus-visible:ring-0 text-base px-4 py-4 pr-12"
                     disabled={isLoading}
+                    data-enable-grammarly="false"
                   />
                   <div className="absolute bottom-3 right-3 flex items-center space-x-2">
                     <Button
@@ -234,6 +235,7 @@ const ChatInterface = () => {
                     placeholder="Ask anything about the content of the indexes"
                     className="resize-none min-h-[60px] border-0 focus:ring-0 focus-visible:ring-0 text-base px-4 py-4 pr-12"
                     disabled={isLoading}
+                    data-enable-grammarly="false"
                   />
                   <div className="absolute bottom-3 right-3 flex items-center space-x-2">
                     <Button
