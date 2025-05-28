@@ -1,6 +1,6 @@
 
 import React, { useState, useRef, useEffect } from 'react';
-import { Send, Settings, Trash } from 'lucide-react';
+import { Send, Settings, Trash, AlertTriangle } from 'lucide-react';
 import MessageBubble from './MessageBubble';
 import SourcesPanel from './SourcesPanel';
 import SettingsModal from './SettingsModal';
@@ -8,6 +8,8 @@ import ProgressIndicator from './ProgressIndicator';
 import ErrorMessage from './ErrorMessage';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
+import { useOpenAIChat } from '@/hooks/useOpenAIChat';
+import { isConfigValid } from '@/config/openai';
 
 interface Message {
   id: string;
@@ -20,14 +22,18 @@ interface Message {
 const ChatInterface = () => {
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState('');
-  const [isLoading, setIsLoading] = useState(false);
   const [hasStartedChat, setHasStartedChat] = useState(false);
   const [showSources, setShowSources] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
   const [currentSources, setCurrentSources] = useState<Array<{ title: string; url: string; snippet: string }>>([]);
-  const [isSearching, setIsSearching] = useState(false);
+  const [isApiKeySet, setIsApiKeySet] = useState(isConfigValid());
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
+
+  // Use our custom OpenAI chat hook with the streaming implementation
+  const { streamChatCompletion, isLoading, isSearching } = useOpenAIChat({
+    onError: (errorMessage) => addErrorMessage(errorMessage)
+  });
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -52,12 +58,25 @@ const ChatInterface = () => {
     setMessages(prev => [...prev, errorMsg]);
   };
 
+  // Function to clear all messages
+  const handleClearChat = () => {
+    setMessages([]);
+    setHasStartedChat(false);
+  };
+
   const dismissError = (messageId: string) => {
     setMessages(prev => prev.filter(msg => msg.id !== messageId));
   };
 
   const handleSend = async () => {
     if (!input.trim()) return;
+
+    // Check if API key is set
+    if (!isApiKeySet) {
+      setShowSettings(true);
+      addErrorMessage("Meilisearch API key is not set. Please configure your API key in settings.");
+      return;
+    }
 
     const userMessage: Message = {
       id: Date.now().toString(),
@@ -68,54 +87,18 @@ const ChatInterface = () => {
 
     setMessages(prev => [...prev, userMessage]);
     setInput('');
-    setIsSearching(true);
 
     if (!hasStartedChat) {
       setHasStartedChat(true);
     }
 
-    // Simulate searching phase
-    setTimeout(() => {
-      setIsSearching(false);
-      setIsLoading(true);
-    }, 1000);
-
-    // Simulate AI response with sources
-    setTimeout(() => {
-      try {
-        const assistantMessage: Message = {
-          id: (Date.now() + 1).toString(),
-          type: 'assistant',
-          content: `I understand you're asking about "${userMessage.content}". This is a simulated response to demonstrate the chat interface. The actual AI integration would go here, where you'd connect to your preferred AI service like OpenAI's GPT, Anthropic's Claude, or Mistral AI.
-
-This response shows how the interface handles longer messages with proper formatting and line breaks. The sources button below will show relevant references that would typically come from the AI's response.`,
-          sources: [
-            {
-              title: "OpenAI GPT Documentation",
-              url: "https://platform.openai.com/docs",
-              snippet: "Official documentation for integrating GPT models into applications."
-            },
-            {
-              title: "Anthropic Claude API Guide",
-              url: "https://docs.anthropic.com/claude/docs",
-              snippet: "Comprehensive guide for using Claude AI in your applications."
-            },
-            {
-              title: "Mistral AI Documentation",
-              url: "https://docs.mistral.ai/",
-              snippet: "Technical documentation for Mistral AI models and API usage."
-            }
-          ],
-          timestamp: new Date(),
-        };
-
-        setMessages(prev => [...prev, assistantMessage]);
-        setIsLoading(false);
-      } catch (error) {
-        setIsLoading(false);
-        addErrorMessage("Failed to get response from AI. Please check your API settings and try again.");
-      }
-    }, 2500);
+    try {
+      // Use the OpenAI streaming chat completion with the official SDK
+      await streamChatCompletion([...messages, userMessage], setMessages);
+    } catch (error) {
+      console.error("Error during chat completion:", error);
+      addErrorMessage(error instanceof Error ? error.message : "An error occurred during chat completion");
+    }
   };
 
   const handleKeyPress = (e: React.KeyboardEvent) => {
@@ -123,6 +106,12 @@ This response shows how the interface handles longer messages with proper format
       e.preventDefault();
       handleSend();
     }
+  };
+
+  // Check API key validity when settings modal closes
+  const handleSettingsClose = () => {
+    setShowSettings(false);
+    setIsApiKeySet(isConfigValid());
   };
 
   return (
@@ -140,10 +129,22 @@ This response shows how the interface handles longer messages with proper format
             >
               <Settings className="h-4 w-4" />
             </Button>
-            <Button variant="ghost" size="sm" className="p-2">
+            <Button
+              variant="ghost"
+              size="sm"
+              className="p-2"
+              onClick={handleClearChat}
+            >
               <Trash className="h-4 w-4" />
             </Button>
             <h1 className="text-lg font-medium">Dialogue with Meilisearch</h1>
+
+            {!isApiKeySet && (
+              <div className="flex items-center ml-2 text-amber-500">
+                <AlertTriangle className="h-4 w-4 mr-1" />
+                <span className="text-xs">API key not set</span>
+              </div>
+            )}
           </div>
         </div>
 
@@ -261,7 +262,7 @@ This response shows how the interface handles longer messages with proper format
       {/* Settings Modal */}
       <SettingsModal
         isOpen={showSettings}
-        onClose={() => setShowSettings(false)}
+        onClose={handleSettingsClose}
       />
     </div>
   );
