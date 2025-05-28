@@ -59,7 +59,7 @@ const MessageBubble = ({ message, onShowSources }: MessageBubbleProps) => {
           "prose-th:border prose-th:border-border prose-th:p-2 prose-th:bg-muted",
           "prose-td:border prose-td:border-border prose-td:p-2"
         )}>
-          <ReactMarkdown 
+          <ReactMarkdown
             remarkPlugins={[remarkGfm]}
             rehypePlugins={[rehypeSanitize, rehypeRaw]}
             components={{
@@ -73,7 +73,7 @@ const MessageBubble = ({ message, onShowSources }: MessageBubbleProps) => {
                 <pre {...props} className="p-4 overflow-x-auto" />
               ),
               code: ({ node, inline, className, children, ...props }) => (
-                inline ? 
+                inline ?
                 <code className={className} {...props}>{children}</code> :
                 <code className={cn("block text-sm p-4", className)} {...props}>{children}</code>
               )
@@ -92,7 +92,7 @@ const MessageBubble = ({ message, onShowSources }: MessageBubbleProps) => {
               onClick={() => onShowSources(message.sources!)}
               className="text-xs h-7 px-3 bg-white hover:bg-gray-50 border-gray-200 text-gray-600 hover:text-gray-800 rounded-full"
             >
-              <FileText className="h-3 w-3 mr-1" />
+              <FileText className="h-3 w-3" />
               {message.sources.length} source{message.sources.length > 1 ? 's' : ''}
             </Button>
           </div>
