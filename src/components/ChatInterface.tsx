@@ -100,7 +100,7 @@ This response shows how the interface handles longer messages with proper format
       {/* Main Chat Area */}
       <div className={`flex flex-col flex-1 transition-all duration-300 ${showSources ? 'mr-80' : ''}`}>
         {/* Header */}
-        <div className="border-b border-gray-100 px-4 py-3 flex items-center justify-between">
+        <div className="border-b border-gray-100 px-4 py-3 flex items-center justify-between flex-shrink-0">
           <div className="flex items-center space-x-3">
             <Button variant="ghost" size="sm" className="p-2">
               <Plus className="h-4 w-4" />
@@ -109,54 +109,53 @@ This response shows how the interface handles longer messages with proper format
           </div>
         </div>
 
-        {/* Messages Container */}
-        <div className="flex-1 overflow-hidden relative">
-          {!hasStartedChat ? (
-            // Centered initial state
-            <div className="flex items-center justify-center h-full px-4">
-              <div className="w-full max-w-3xl animate-fade-in">
-                <div className="text-center mb-12">
-                  <h2 className="text-4xl font-normal text-gray-800 mb-6">
-                    Comment puis-je vous aider ?
-                  </h2>
-                </div>
-                
-                <div className="relative">
-                  <div className="relative border border-gray-200 rounded-xl overflow-hidden shadow-sm hover:shadow-md transition-shadow duration-200">
-                    <Textarea
-                      ref={textareaRef}
-                      value={input}
-                      onChange={(e) => setInput(e.target.value)}
-                      onKeyPress={handleKeyPress}
-                      placeholder="Poser une question"
-                      className="resize-none min-h-[60px] border-0 focus:ring-0 focus-visible:ring-0 text-base px-4 py-4 pr-12"
-                      disabled={isLoading}
-                    />
-                    <div className="absolute bottom-3 right-3 flex items-center space-x-2">
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        className="h-8 w-8 p-0 text-gray-500 hover:text-gray-700"
-                      >
-                        <Plus className="h-4 w-4" />
-                      </Button>
-                      <Button
-                        onClick={handleSend}
-                        disabled={!input.trim() || isLoading}
-                        size="sm"
-                        className="h-8 w-8 p-0 rounded-lg bg-gray-900 hover:bg-gray-800 disabled:bg-gray-300 text-white"
-                      >
-                        <Send className="h-4 w-4" />
-                      </Button>
-                    </div>
+        {!hasStartedChat ? (
+          // Centered initial state
+          <div className="flex-1 flex items-center justify-center px-4">
+            <div className="w-full max-w-3xl animate-fade-in">
+              <div className="text-center mb-12">
+                <h2 className="text-4xl font-normal text-gray-800 mb-6">
+                  Comment puis-je vous aider ?
+                </h2>
+              </div>
+              
+              <div className="relative">
+                <div className="relative border border-gray-200 rounded-xl overflow-hidden shadow-sm hover:shadow-md transition-shadow duration-200">
+                  <Textarea
+                    ref={textareaRef}
+                    value={input}
+                    onChange={(e) => setInput(e.target.value)}
+                    onKeyPress={handleKeyPress}
+                    placeholder="Poser une question"
+                    className="resize-none min-h-[60px] border-0 focus:ring-0 focus-visible:ring-0 text-base px-4 py-4 pr-12"
+                    disabled={isLoading}
+                  />
+                  <div className="absolute bottom-3 right-3 flex items-center space-x-2">
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="h-8 w-8 p-0 text-gray-500 hover:text-gray-700"
+                    >
+                      <Plus className="h-4 w-4" />
+                    </Button>
+                    <Button
+                      onClick={handleSend}
+                      disabled={!input.trim() || isLoading}
+                      size="sm"
+                      className="h-8 w-8 p-0 rounded-lg bg-gray-900 hover:bg-gray-800 disabled:bg-gray-300 text-white"
+                    >
+                      <Send className="h-4 w-4" />
+                    </Button>
                   </div>
                 </div>
               </div>
             </div>
-          ) : (
-            // Messages view
-            <div className="h-full overflow-y-auto">
-              <div className="max-w-3xl mx-auto px-4 py-6 space-y-6 animate-fade-in">
+          </div>
+        ) : (
+          // Messages view with proper scrolling
+          <>
+            <div className="flex-1 overflow-y-auto">
+              <div className="max-w-3xl mx-auto px-4 py-6 space-y-6">
                 {messages.map((message) => (
                   <MessageBubble 
                     key={message.id} 
@@ -166,7 +165,7 @@ This response shows how the interface handles longer messages with proper format
                 ))}
                 
                 {isLoading && (
-                  <div className="flex justify-start">
+                  <div className="flex justify-start animate-fade-in">
                     <div className="bg-gray-50 rounded-2xl px-4 py-3 max-w-xs border border-gray-100">
                       <div className="flex space-x-1">
                         <div className="w-2 h-2 bg-gray-400 rounded-full animate-pulse"></div>
@@ -180,11 +179,9 @@ This response shows how the interface handles longer messages with proper format
                 <div ref={messagesEndRef} />
               </div>
             </div>
-          )}
 
-          {/* Bottom Input (appears after first message) */}
-          {hasStartedChat && (
-            <div className="border-t border-gray-100 bg-white p-4 animate-slide-in-right">
+            {/* Bottom Input */}
+            <div className="border-t border-gray-100 bg-white p-4 flex-shrink-0">
               <div className="max-w-3xl mx-auto">
                 <div className="relative border border-gray-200 rounded-xl overflow-hidden shadow-sm hover:shadow-md transition-shadow duration-200">
                   <Textarea
@@ -216,8 +213,8 @@ This response shows how the interface handles longer messages with proper format
                 </div>
               </div>
             </div>
-          )}
-        </div>
+          </>
+        )}
       </div>
 
       {/* Sources Panel */}
