@@ -67,8 +67,8 @@ export const useOpenAIChat = (options?: UseOpenAIChatOptions) => {
         return;
       }
 
-      // Create a placeholder message for streaming
-      const assistantMessageId = Date.now().toString();
+      // Create a placeholder message for streaming with a distinctive ID
+      const assistantMessageId = `assistant-${Date.now()}`;
       const assistantMessage: ChatMessage = {
         id: assistantMessageId,
         type: 'assistant',
@@ -78,6 +78,7 @@ export const useOpenAIChat = (options?: UseOpenAIChatOptions) => {
       };
 
       // Add empty message that will be updated with stream
+      // Make sure this message is always added at the end
       setMessages(prev => [...prev, assistantMessage]);
 
       // Set searching state (this could be connected to a real search in the future)
@@ -237,12 +238,14 @@ export const useOpenAIChat = (options?: UseOpenAIChatOptions) => {
           },
           // Handle each chunk of the stream
           (chunk: string) => {
-            setMessages(prev =>
-              prev.map(msg =>
-                msg.id === assistantMessageId
-                  ? { ...msg, content: msg.content + chunk }
-                  : msg
-              )
+            // Find and update only the assistant message with the matching ID
+            setMessages(prev => 
+              prev.map(msg => {
+                if (msg.id === assistantMessageId) {
+                  return { ...msg, content: msg.content + chunk };
+                }
+                return msg;
+              })
             );
           },
           // Handle errors
@@ -253,9 +256,8 @@ export const useOpenAIChat = (options?: UseOpenAIChatOptions) => {
           // Handle completion
           () => {
             setIsLoading(false);
-
             // Add sources when complete (replace with real sources if available)
-            setMessages(prev =>
+            setMessages(prev => 
               prev.map(msg =>
                 msg.id === assistantMessageId
                   ? {

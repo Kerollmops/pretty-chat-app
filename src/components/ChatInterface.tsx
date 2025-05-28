@@ -50,7 +50,7 @@ const ChatInterface = () => {
 
   const addErrorMessage = (errorMessage: string) => {
     const errorMsg: Message = {
-      id: Date.now().toString(),
+      id: `error-${Date.now()}`,
       type: 'error',
       content: errorMessage,
       timestamp: new Date(),
@@ -79,7 +79,7 @@ const ChatInterface = () => {
     }
 
     const userMessage: Message = {
-      id: Date.now().toString(),
+      id: `user-${Date.now()}`,
       type: 'user',
       content: input.trim(),
       timestamp: new Date(),
@@ -94,7 +94,7 @@ const ChatInterface = () => {
 
     try {
       // Use the OpenAI streaming chat completion with the official SDK
-      await streamChatCompletion([...messages, userMessage], setMessages);
+      await streamChatCompletion(messages, setMessages);
     } catch (error) {
       console.error("Error during chat completion:", error);
       addErrorMessage(error instanceof Error ? error.message : "An error occurred during chat completion");
