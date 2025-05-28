@@ -1,6 +1,6 @@
 
 import React, { useState, useRef, useEffect } from 'react';
-import { Send, Plus } from 'lucide-react';
+import { Send, Plus, Settings, Trash } from 'lucide-react';
 import MessageBubble from './MessageBubble';
 import SourcesPanel from './SourcesPanel';
 import { Button } from '@/components/ui/button';
@@ -50,7 +50,7 @@ const ChatInterface = () => {
     setMessages(prev => [...prev, userMessage]);
     setInput('');
     setIsLoading(true);
-    
+
     if (!hasStartedChat) {
       setHasStartedChat(true);
     }
@@ -70,7 +70,7 @@ This response shows how the interface handles longer messages with proper format
             snippet: "Official documentation for integrating GPT models into applications."
           },
           {
-            title: "Anthropic Claude API Guide", 
+            title: "Anthropic Claude API Guide",
             url: "https://docs.anthropic.com/claude/docs",
             snippet: "Comprehensive guide for using Claude AI in your applications."
           },
@@ -82,7 +82,7 @@ This response shows how the interface handles longer messages with proper format
         ],
         timestamp: new Date(),
       };
-      
+
       setMessages(prev => [...prev, assistantMessage]);
       setIsLoading(false);
     }, 1500);
@@ -101,11 +101,14 @@ This response shows how the interface handles longer messages with proper format
       <div className={`flex flex-col flex-1 transition-all duration-300 ${showSources ? 'mr-80' : ''}`}>
         {/* Header */}
         <div className="border-b border-gray-100 px-4 py-3 flex items-center justify-between flex-shrink-0">
-          <div className="flex items-center space-x-3">
+          <div className="flex items-center space-x-2">
             <Button variant="ghost" size="sm" className="p-2">
-              <Plus className="h-4 w-4" />
+              <Settings className="h-4 w-4" />
             </Button>
-            <h1 className="text-lg font-medium text-gray-900">ChatGPT</h1>
+            <Button variant="ghost" size="sm" className="p-2">
+              <Trash className="h-4 w-4" />
+            </Button>
+            <h1 className="text-lg font-medium text-gray-900">Dialogue with Meilisearch</h1>
           </div>
         </div>
 
@@ -115,10 +118,14 @@ This response shows how the interface handles longer messages with proper format
             <div className="w-full max-w-3xl animate-fade-in">
               <div className="text-center mb-12">
                 <h2 className="text-4xl font-normal text-gray-800 mb-6">
-                  Comment puis-je vous aider ?
+                  How can I help you today?
                 </h2>
+                <p className="text-gray-500 text-lg">
+                  Ask anything to Meilisearch that you would like to know about the content of the indexes or any other topic.
+                  Meilisearch will respond with the most relevant information.
+                </p>
               </div>
-              
+
               <div className="relative">
                 <div className="relative border border-gray-200 rounded-xl overflow-hidden shadow-sm hover:shadow-md transition-shadow duration-200">
                   <Textarea
@@ -126,18 +133,11 @@ This response shows how the interface handles longer messages with proper format
                     value={input}
                     onChange={(e) => setInput(e.target.value)}
                     onKeyPress={handleKeyPress}
-                    placeholder="Poser une question"
+                    placeholder="Ask anything about the content of the indexes"
                     className="resize-none min-h-[60px] border-0 focus:ring-0 focus-visible:ring-0 text-base px-4 py-4 pr-12"
                     disabled={isLoading}
                   />
                   <div className="absolute bottom-3 right-3 flex items-center space-x-2">
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      className="h-8 w-8 p-0 text-gray-500 hover:text-gray-700"
-                    >
-                      <Plus className="h-4 w-4" />
-                    </Button>
                     <Button
                       onClick={handleSend}
                       disabled={!input.trim() || isLoading}
@@ -157,13 +157,13 @@ This response shows how the interface handles longer messages with proper format
             <div className="flex-1 overflow-y-auto">
               <div className="max-w-3xl mx-auto px-4 py-6 space-y-6">
                 {messages.map((message) => (
-                  <MessageBubble 
-                    key={message.id} 
-                    message={message} 
+                  <MessageBubble
+                    key={message.id}
+                    message={message}
                     onShowSources={handleShowSources}
                   />
                 ))}
-                
+
                 {isLoading && (
                   <div className="flex justify-start animate-fade-in">
                     <div className="bg-gray-50 rounded-2xl px-4 py-3 max-w-xs border border-gray-100">
@@ -175,13 +175,13 @@ This response shows how the interface handles longer messages with proper format
                     </div>
                   </div>
                 )}
-                
+
                 <div ref={messagesEndRef} />
               </div>
             </div>
 
             {/* Bottom Input */}
-            <div className="border-t border-gray-100 bg-white p-4 flex-shrink-0">
+            <div className="border-gray-100 bg-white p-4 flex-shrink-0">
               <div className="max-w-3xl mx-auto">
                 <div className="relative border border-gray-200 rounded-xl overflow-hidden shadow-sm hover:shadow-md transition-shadow duration-200">
                   <Textarea
@@ -189,18 +189,11 @@ This response shows how the interface handles longer messages with proper format
                     value={input}
                     onChange={(e) => setInput(e.target.value)}
                     onKeyPress={handleKeyPress}
-                    placeholder="Demander au Chat ou @mentionner un agent"
+                    placeholder="Ask anything about the content of the indexes"
                     className="resize-none min-h-[60px] border-0 focus:ring-0 focus-visible:ring-0 text-base px-4 py-4 pr-12"
                     disabled={isLoading}
                   />
                   <div className="absolute bottom-3 right-3 flex items-center space-x-2">
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      className="h-8 w-8 p-0 text-gray-500 hover:text-gray-700"
-                    >
-                      <Plus className="h-4 w-4" />
-                    </Button>
                     <Button
                       onClick={handleSend}
                       disabled={!input.trim() || isLoading}
