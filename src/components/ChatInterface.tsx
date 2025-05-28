@@ -1,6 +1,6 @@
 
 import React, { useState, useRef, useEffect } from 'react';
-import { Send } from 'lucide-react';
+import { Send, Plus } from 'lucide-react';
 import MessageBubble from './MessageBubble';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
@@ -88,60 +88,72 @@ This response shows how the interface handles longer messages with proper format
   };
 
   return (
-    <div className="flex flex-col h-screen bg-gradient-to-br from-gray-50 to-white">
+    <div className="flex flex-col h-screen bg-white">
       {/* Header */}
-      <div className="border-b border-gray-200 bg-white/80 backdrop-blur-sm px-6 py-4">
-        <h1 className="text-2xl font-semibold text-gray-800">AI Chat Assistant</h1>
-        <p className="text-sm text-gray-600 mt-1">Powered by advanced AI models</p>
+      <div className="border-b border-gray-100 px-4 py-3 flex items-center justify-between">
+        <div className="flex items-center space-x-3">
+          <Button variant="ghost" size="sm" className="p-2">
+            <Plus className="h-4 w-4" />
+          </Button>
+          <h1 className="text-lg font-medium text-gray-900">ChatGPT</h1>
+        </div>
       </div>
 
       {/* Messages Container */}
       <div className="flex-1 overflow-hidden relative">
         {!hasStartedChat ? (
           // Centered initial state
-          <div className="flex items-center justify-center h-full px-6">
-            <div className="w-full max-w-2xl animate-fade-in">
-              <div className="text-center mb-8">
-                <h2 className="text-3xl font-bold text-gray-800 mb-2">
-                  What can I help you with today?
+          <div className="flex items-center justify-center h-full px-4">
+            <div className="w-full max-w-3xl animate-fade-in">
+              <div className="text-center mb-12">
+                <h2 className="text-4xl font-normal text-gray-800 mb-6">
+                  Comment puis-je vous aider ?
                 </h2>
-                <p className="text-gray-600">
-                  Ask me anything and I'll provide detailed responses with sources.
-                </p>
               </div>
               
               <div className="relative">
-                <Textarea
-                  ref={textareaRef}
-                  value={input}
-                  onChange={(e) => setInput(e.target.value)}
-                  onKeyPress={handleKeyPress}
-                  placeholder="Type your message here..."
-                  className="resize-none min-h-[120px] pr-12 text-base border-2 border-gray-200 focus:border-blue-500 rounded-xl shadow-lg focus:shadow-xl transition-all duration-200"
-                  disabled={isLoading}
-                />
-                <Button
-                  onClick={handleSend}
-                  disabled={!input.trim() || isLoading}
-                  size="sm"
-                  className="absolute bottom-3 right-3 h-8 w-8 p-0 rounded-lg bg-blue-600 hover:bg-blue-700 disabled:bg-gray-300 transition-colors duration-200"
-                >
-                  <Send className="h-4 w-4" />
-                </Button>
+                <div className="relative border border-gray-200 rounded-xl overflow-hidden shadow-sm hover:shadow-md transition-shadow duration-200">
+                  <Textarea
+                    ref={textareaRef}
+                    value={input}
+                    onChange={(e) => setInput(e.target.value)}
+                    onKeyPress={handleKeyPress}
+                    placeholder="Poser une question"
+                    className="resize-none min-h-[60px] border-0 focus:ring-0 focus-visible:ring-0 text-base px-4 py-4 pr-12"
+                    disabled={isLoading}
+                  />
+                  <div className="absolute bottom-3 right-3 flex items-center space-x-2">
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="h-8 w-8 p-0 text-gray-500 hover:text-gray-700"
+                    >
+                      <Plus className="h-4 w-4" />
+                    </Button>
+                    <Button
+                      onClick={handleSend}
+                      disabled={!input.trim() || isLoading}
+                      size="sm"
+                      className="h-8 w-8 p-0 rounded-lg bg-gray-900 hover:bg-gray-800 disabled:bg-gray-300 text-white"
+                    >
+                      <Send className="h-4 w-4" />
+                    </Button>
+                  </div>
+                </div>
               </div>
             </div>
           </div>
         ) : (
           // Messages view
-          <div className="h-full overflow-y-auto px-6 py-4">
-            <div className="max-w-4xl mx-auto space-y-6 animate-fade-in">
+          <div className="h-full overflow-y-auto">
+            <div className="max-w-3xl mx-auto px-4 py-6 space-y-6 animate-fade-in">
               {messages.map((message) => (
                 <MessageBubble key={message.id} message={message} />
               ))}
               
               {isLoading && (
                 <div className="flex justify-start">
-                  <div className="bg-gray-100 rounded-2xl px-4 py-3 max-w-xs">
+                  <div className="bg-gray-50 rounded-2xl px-4 py-3 max-w-xs border border-gray-100">
                     <div className="flex space-x-1">
                       <div className="w-2 h-2 bg-gray-400 rounded-full animate-pulse"></div>
                       <div className="w-2 h-2 bg-gray-400 rounded-full animate-pulse" style={{animationDelay: '0.2s'}}></div>
@@ -158,26 +170,35 @@ This response shows how the interface handles longer messages with proper format
 
         {/* Bottom Input (appears after first message) */}
         {hasStartedChat && (
-          <div className="border-t border-gray-200 bg-white/80 backdrop-blur-sm p-4 animate-slide-in-right">
-            <div className="max-w-4xl mx-auto">
-              <div className="relative">
+          <div className="border-t border-gray-100 bg-white p-4 animate-slide-in-right">
+            <div className="max-w-3xl mx-auto">
+              <div className="relative border border-gray-200 rounded-xl overflow-hidden shadow-sm hover:shadow-md transition-shadow duration-200">
                 <Textarea
                   ref={textareaRef}
                   value={input}
                   onChange={(e) => setInput(e.target.value)}
                   onKeyPress={handleKeyPress}
-                  placeholder="Type your message here..."
-                  className="resize-none min-h-[60px] pr-12 text-base border-2 border-gray-200 focus:border-blue-500 rounded-xl focus:shadow-lg transition-all duration-200"
+                  placeholder="Demander au Chat ou @mentionner un agent"
+                  className="resize-none min-h-[60px] border-0 focus:ring-0 focus-visible:ring-0 text-base px-4 py-4 pr-12"
                   disabled={isLoading}
                 />
-                <Button
-                  onClick={handleSend}
-                  disabled={!input.trim() || isLoading}
-                  size="sm"
-                  className="absolute bottom-3 right-3 h-8 w-8 p-0 rounded-lg bg-blue-600 hover:bg-blue-700 disabled:bg-gray-300 transition-colors duration-200"
-                >
-                  <Send className="h-4 w-4" />
-                </Button>
+                <div className="absolute bottom-3 right-3 flex items-center space-x-2">
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="h-8 w-8 p-0 text-gray-500 hover:text-gray-700"
+                  >
+                    <Plus className="h-4 w-4" />
+                  </Button>
+                  <Button
+                    onClick={handleSend}
+                    disabled={!input.trim() || isLoading}
+                    size="sm"
+                    className="h-8 w-8 p-0 rounded-lg bg-gray-900 hover:bg-gray-800 disabled:bg-gray-300 text-white"
+                  >
+                    <Send className="h-4 w-4" />
+                  </Button>
+                </div>
               </div>
             </div>
           </div>
