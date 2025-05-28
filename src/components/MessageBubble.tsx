@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 
 interface Message {
   id: string;
-  type: 'user' | 'assistant';
+  type: 'user' | 'assistant' | 'error';
   content: string;
   sources?: Array<{ title: string; url: string; snippet: string }>;
   timestamp: Date;
