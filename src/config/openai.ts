@@ -28,7 +28,7 @@ export const OPENAI_CONFIG = {
 // Create system message for the chat
 export const createSystemMessage = () => ({
   role: 'system' as const,
-  content: 'You are a helpful AI assistant integrated with Meilisearch. Answer questions about the content of the indexes or any other topic with accurate and relevant information.'
+  content: 'You are a helpful AI assistant integrated with Meilisearch. Answer questions about the content of the indexes or any other topic with accurate and relevant information. Format your responses using Markdown to enhance readability. Use headings, lists, bold/italic text, code blocks, and other formatting when appropriate to structure your responses. Include code snippets with proper syntax highlighting when providing examples.'
 });
 
 // Validate that API key is set
