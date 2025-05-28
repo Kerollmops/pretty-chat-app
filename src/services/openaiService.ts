@@ -12,6 +12,18 @@ export interface StreamOptions {
   temperature?: number;
   max_tokens?: number;
   stream: boolean;
+  tools?: any[];
+  tool_choice?: string | object;
+}
+
+// Tool call related interfaces
+export interface ToolCall {
+  type: string;
+  id: string;
+  function: {
+    name: string;
+    arguments: string;
+  };
 }
 
 // Create a singleton OpenAI client instance
@@ -19,16 +31,17 @@ class OpenAIService {
   private static instance: OpenAIService;
   private client: OpenAI;
 
-  private constructor(apiKey: string) {
+  private constructor(baseURL: string, apiKey: string) {
     this.client = new OpenAI({
       apiKey,
+      baseURL,
       dangerouslyAllowBrowser: true // Note: This is for client-side usage. In production, proxy through your backend.
     });
   }
 
-  public static getInstance(apiKey: string): OpenAIService {
+  public static getInstance(baseURL: string, apiKey: string): OpenAIService {
     if (!OpenAIService.instance) {
-      OpenAIService.instance = new OpenAIService(apiKey);
+      OpenAIService.instance = new OpenAIService(baseURL, apiKey);
     }
     return OpenAIService.instance;
   }
@@ -53,6 +66,8 @@ class OpenAIService {
         temperature: options.temperature ?? 0.7,
         max_tokens: options.max_tokens,
         stream: true,
+        tools: options.tools,
+        tool_choice: options.tool_choice,
       });
 
       // Process the stream using the OpenAI SDK
@@ -61,11 +76,46 @@ class OpenAIService {
         if (content) {
           onChunk(content);
         }
+
+        // Check for tool calls (this is where we would intercept them)
+        const toolCall = chunk.choices[0]?.delta?.tool_calls?.[0];
+        if (toolCall) {
+          this.processToolCall(toolCall);
+        }
       }
 
       onComplete();
     } catch (error) {
       onError(error instanceof Error ? error : new Error('Unknown error occurred'));
+    }
+  }
+
+  /**
+   * Process a tool call from the LLM
+   * @param toolCall The tool call object from the OpenAI API
+   */
+  private processToolCall(toolCall: any): void {
+    try {
+      const toolName = toolCall.function?.name;
+      const toolArgs = toolCall.function?.arguments;
+
+      if (toolName && typeof window[toolName] === 'function') {
+        console.log(`Executing tool call: ${toolName}`);
+
+        // Parse arguments and call the tool function
+        const args = toolArgs ? JSON.parse(toolArgs) : {};
+        window[toolName](args);
+      }
+    } catch (error) {
+      console.error('Error processing tool call:', error);
+
+      // Report error using the error reporting tool if available
+      if (typeof window['_meiliReportError'] === 'function') {
+        window['_meiliReportError']({
+          error_code: 'TOOL_CALL_ERROR',
+          message: error instanceof Error ? error.message : 'Unknown error processing tool call'
+        });
+      }
     }
   }
 
@@ -83,6 +133,8 @@ class OpenAIService {
       temperature: options.temperature ?? 0.7,
       max_tokens: options.max_tokens,
       stream: false,
+      tools: options.tools,
+      tool_choice: options.tool_choice,
     });
   }
 }
