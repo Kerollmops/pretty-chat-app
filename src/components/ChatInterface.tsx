@@ -132,9 +132,9 @@ This response shows how the interface handles longer messages with proper format
         {/* Header */}
         <div className="border-b border-border px-4 py-3 flex items-center justify-between flex-shrink-0">
           <div className="flex items-center space-x-2">
-            <Button 
-              variant="ghost" 
-              size="sm" 
+            <Button
+              variant="ghost"
+              size="sm"
               className="p-2"
               onClick={() => setShowSettings(true)}
             >

@@ -38,7 +38,7 @@ const SourcesModal = ({ sources, isOpen, onClose }: SourcesModalProps) => {
             </Button>
           </DialogTitle>
         </DialogHeader>
-        
+
         <div className="overflow-y-auto max-h-[60vh] pr-2">
           <div className="space-y-4">
             {sources.map((source, index) => (
@@ -59,11 +59,11 @@ const SourcesModal = ({ sources, isOpen, onClose }: SourcesModalProps) => {
                     <ExternalLink className="h-4 w-4" />
                   </a>
                 </div>
-                
+
                 <p className="text-gray-600 text-sm leading-relaxed mb-2">
                   {source.snippet}
                 </p>
-                
+
                 <div className="text-xs text-gray-500 break-all">
                   {source.url}
                 </div>

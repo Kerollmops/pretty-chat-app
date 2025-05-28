@@ -37,10 +37,10 @@ const MessageBubble = ({ message, onShowSources }: MessageBubbleProps) => {
   return (
     <div className="animate-fade-in">
       <div className="max-w-none mr-12">
-        <div className="whitespace-pre-wrap text-[15px] leading-relaxed text-gray-900 mb-4">
+        <div className="whitespace-pre-wrap text-[15px] leading-relaxed mb-4">
           {message.content}
         </div>
-        
+
         {/* Sources Button */}
         {message.sources && message.sources.length > 0 && (
           <div className="flex justify-start">
@@ -50,7 +50,7 @@ const MessageBubble = ({ message, onShowSources }: MessageBubbleProps) => {
               onClick={() => onShowSources(message.sources!)}
               className="text-xs h-7 px-3 bg-white hover:bg-gray-50 border-gray-200 text-gray-600 hover:text-gray-800 rounded-full"
             >
-              <FileText className="h-3 w-3 mr-1" />
+              <FileText className="h-3 w-3" />
               {message.sources.length} source{message.sources.length > 1 ? 's' : ''}
             </Button>
           </div>
