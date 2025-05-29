@@ -27,8 +27,7 @@ const ChatWelcome = ({
             How can I help you today?
           </h2>
           <p className="text-muted-foreground text-lg">
-            Ask anything to Meilisearch that you would like to know about the content of the indexes or any other topic.
-            Meilisearch will respond with the most relevant information.
+            Chat with Meilisearch to find information quickly. Ask questions about your documents and get personalized results from your indexes. Meilisearch makes finding information natural and effortless by searching through your data to deliver relevant answers to your queries.
           </p>
         </div>
 

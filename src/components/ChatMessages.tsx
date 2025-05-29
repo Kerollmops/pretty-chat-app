@@ -22,14 +22,14 @@ interface ChatMessagesProps {
   messagesEndRef: React.RefObject<HTMLDivElement>;
 }
 
-const ChatMessages = ({ 
-  messages, 
-  isSearching, 
-  isLoading, 
+const ChatMessages = ({
+  messages,
+  isSearching,
+  isLoading,
   searchProgress,
-  onShowSources, 
-  onDismissError, 
-  messagesEndRef 
+  onShowSources,
+  onDismissError,
+  messagesEndRef
 }: ChatMessagesProps) => {
   return (
     <div className="flex-1 overflow-y-auto">
@@ -54,8 +54,8 @@ const ChatMessages = ({
         })}
 
         {isSearching && searchProgress && (
-          <ProgressIndicator 
-            message={`Searching in index "${searchProgress.indexUid}" for: *${searchProgress.query}*`} 
+          <ProgressIndicator
+            message={`Searching in index "${searchProgress.indexUid}" for: *${searchProgress.query}*`}
           />
         )}
 
@@ -63,7 +63,7 @@ const ChatMessages = ({
           <ProgressIndicator message="Searching for documents..." />
         )}
 
-        {isLoading && !isSearching && (
+        {isLoading && !isSearching && messages[messages.length - 1].content.trim().length === 0 && (
           <ProgressIndicator message="Generating response..." />
         )}
 
