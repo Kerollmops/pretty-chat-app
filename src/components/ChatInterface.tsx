@@ -38,7 +38,7 @@ const ChatInterface = () => {
   // Subscribe to ConversationManager events
   useEffect(() => {
     const conversationManager = ConversationManager.getInstance();
-    
+
     const unsubscribeProgress = conversationManager.subscribeToProgress((progress) => {
       setSearchProgress(progress);
     });
@@ -52,20 +52,20 @@ const ChatInterface = () => {
       setMessages(prev => {
         const updatedMessages = [...prev];
         const lastAssistantIndex = updatedMessages.map(m => m.type).lastIndexOf('assistant');
-        
+
         if (lastAssistantIndex !== -1) {
-          const formattedSources = sourcesData.sources.map((source: any, index) => ({
-            title: source.title || `Source ${index + 1}`,
-            url: source.url || '#',
-            snippet: source.snippet || JSON.stringify(source).substring(0, 150) + '...'
+          const formattedSources = sourcesData.sources.map((source: object, index) => ({
+            title: source["title"] || `Source ${index + 1}`,
+            url: source["url"] || '#',
+            snippet: source["snippet"] || JSON.stringify(source).substring(0, 150) + '...'
           }));
-          
+
           updatedMessages[lastAssistantIndex] = {
             ...updatedMessages[lastAssistantIndex],
-            sources: formattedSources
+            sources: updatedMessages[lastAssistantIndex].sources.concat(formattedSources)
           };
         }
-        
+
         return updatedMessages;
       });
     });

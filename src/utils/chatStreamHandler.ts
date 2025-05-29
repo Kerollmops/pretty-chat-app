@@ -32,7 +32,7 @@ export class ChatStreamHandler {
         role: 'user',
         content: latestUserMessage.content
       };
-      
+
       this.conversationManager.addMessage(userOpenAIMessage);
     }
 
@@ -91,7 +91,7 @@ export class ChatStreamHandler {
         // Handle completion
         () => {
           setIsLoading(false);
-          
+
           // Get the final assistant message content and add to conversation
           setMessages(prev => {
             const finalMessage = prev.find(msg => msg.id === assistantMessageId);
@@ -103,26 +103,7 @@ export class ChatStreamHandler {
               this.conversationManager.addMessage(assistantOpenAIMessage);
             }
 
-            // Add sources when complete
-            return prev.map(msg =>
-              msg.id === assistantMessageId
-                ? {
-                    ...msg,
-                    sources: [
-                      {
-                        title: "OpenAI Documentation",
-                        url: "https://platform.openai.com/docs",
-                        snippet: "Official documentation for OpenAI's API and models."
-                      },
-                      {
-                        title: "Meilisearch Documentation",
-                        url: "https://docs.meilisearch.com/",
-                        snippet: "Learn how to integrate and use Meilisearch for powerful search capabilities."
-                      }
-                    ]
-                  }
-                : msg
-            );
+            return prev;
           });
 
           onComplete?.();

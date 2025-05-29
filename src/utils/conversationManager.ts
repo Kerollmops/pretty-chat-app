@@ -1,7 +1,7 @@
 
 import { OpenAIMessage } from '@/types/chatTypes';
 import { createSystemMessage } from '@/config/openai';
-import { MeiliReportErrorParams, MeiliSearchProgressParams, MeiliSearchSourcesParams } from '@/services/toolInterceptorService';
+import { MeiliReportErrorParams, MeiliSearchProgressArguments, MeiliSearchProgressParams, MeiliSearchSourcesParams } from '@/services/toolInterceptorService';
 
 class ConversationManager {
   private static instance: ConversationManager;
@@ -88,11 +88,12 @@ class ConversationManager {
     const originalProgressFn = window['_meiliSearchProgress'];
     window['_meiliSearchProgress'] = (progress: MeiliSearchProgressParams) => {
       // Display the progress of a search with the index_uid and q
+      const params: MeiliSearchProgressArguments = JSON.parse(progress.function_arguments);
       this.notifyProgressListeners({
-        indexUid: progress.function_parameters.index_uid,
-        query: progress.function_parameters.q
+        indexUid: params.index_uid,
+        query: params.q
       });
-      
+
       if (originalProgressFn) {
         originalProgressFn(progress);
       }
@@ -105,7 +106,7 @@ class ConversationManager {
         code: error.error_code,
         message: error.message
       });
-      
+
       if (originalErrorFn) {
         originalErrorFn(error);
       }
@@ -118,7 +119,7 @@ class ConversationManager {
         callId: sources.call_id,
         sources: sources.sources
       });
-      
+
       if (originalSourceFn) {
         originalSourceFn(sources);
       }

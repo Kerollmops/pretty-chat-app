@@ -7,7 +7,7 @@ export interface MeiliSearchProgressParams {
   call_id: string;
   // Will always be _meiliSearchInIndex
   function_name: string;
-  function_parameters: MeiliSearchProgressArguments;
+  function_arguments: string;
 }
 
 export interface MeiliSearchProgressArguments {
