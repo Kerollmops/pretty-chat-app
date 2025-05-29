@@ -1,6 +1,7 @@
 
 import { OpenAIMessage } from '@/types/chatTypes';
 import { createSystemMessage } from '@/config/openai';
+import { MeiliReportErrorParams, MeiliSearchProgressParams, MeiliSearchSourcesParams } from '@/services/toolInterceptorService';
 
 class ConversationManager {
   private static instance: ConversationManager;
@@ -40,13 +41,37 @@ class ConversationManager {
   }
 
   public initializeToolInterceptor(): void {
-    const originalFn = window['_meiliAppendConversationMessage'];
+    const originalAppendFn = window['_meiliAppendConversationMessage'];
     window['_meiliAppendConversationMessage'] = (newMessage: OpenAIMessage) => {
-      console.log('Tool message intercepted:', newMessage);
       this.addMessage(newMessage);
+      if (originalAppendFn) {
+        originalAppendFn(newMessage);
+      }
+    };
 
-      if (originalFn) {
-        originalFn(newMessage);
+    const originalProgressFn = window['_meiliSearchProgress'];
+    window['_meiliSearchProgress'] = (progress: MeiliSearchProgressParams) => {
+      // TODO: Display the progress of a search with the index_uid and q
+      //       By using the ProgressIndicator.
+      if (originalProgressFn) {
+        originalProgressFn(progress);
+      }
+    };
+
+    const originalErrorFn = window['_meiliReportError'];
+    window['_meiliReportError'] = (error: MeiliReportErrorParams) => {
+      // TODO: Display the error on the frontend
+      if (originalErrorFn) {
+        originalErrorFn(error);
+      }
+    };
+
+    const originalSourceFn = window['_meiliSearchSources'];
+    window['_meiliSearchSources'] = (sources: MeiliSearchSourcesParams) => {
+      // TODO: Add the sources on the assistant message so
+      //       that they can be seen on the side panel.
+      if (originalSourceFn) {
+        originalSourceFn(sources);
       }
     };
   }

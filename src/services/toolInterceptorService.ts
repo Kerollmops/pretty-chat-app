@@ -1,10 +1,18 @@
 import { useState, useEffect, useCallback } from 'react';
 
 // Define the tool interfaces based on tools.txt
-interface MeiliSearchProgressParams {
-  call_id?: string;
+export interface MeiliSearchProgressParams {
+  // The call id is associated to the search progress call id.
+  // Use it to track the index uid and query in the sources.
+  call_id: string;
+  // Will always be _meiliSearchInIndex
   function_name: string;
-  function_parameters: string;
+  function_parameters: MeiliSearchProgressArguments;
+}
+
+export interface MeiliSearchProgressArguments {
+  index_uid: string;
+  q: string;
 }
 
 interface ToolCall {
@@ -23,12 +31,15 @@ interface MeiliAppendConversationMessageParams {
   tool_call_id: string | null;
 }
 
-interface MeiliSearchSourcesParams {
+export interface MeiliSearchSourcesParams {
+  // The call id is associated to the search progress call id.
+  // Use it to track the index uid and query in the sources.
   call_id: string;
-  documents: object;
+  // Sources are composed of raw JSON objects with arbitrary fields.
+  sources: Array<object>;
 }
 
-interface MeiliReportErrorParams {
+export interface MeiliReportErrorParams {
   error_code: string;
   message: string;
 }
