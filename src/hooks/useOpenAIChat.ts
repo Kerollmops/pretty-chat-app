@@ -26,11 +26,21 @@ export const useOpenAIChat = (options?: UseOpenAIChatOptions) => {
   useEffect(() => {
     ToolInterceptorService.getInstance();
 
-    // Override the original _meiliAppendConversationMessage function to add messages to our context
+    // Override the original _meiliAppendConversationMessage function
     const originalFn = window['_meiliAppendConversationMessage'];
     window['_meiliAppendConversationMessage'] = (newMessage: OpenAIMessage) => {
-      setConversationMessages(prev => [...prev, newMessage]);
-      console.log('Added message to conversation context:', newMessage);
+      console.log('Tool message intercepted:', newMessage);
+      // Append message to conversationMessages
+      setConversationMessages(prev => {
+        console.log('Appending message:', newMessage);
+
+        // Always append to the end of the array
+        return [...prev, newMessage];
+      });
+
+      if (originalFn) {
+        originalFn(newMessage);
+      }
     };
 
     return () => {
@@ -41,15 +51,16 @@ export const useOpenAIChat = (options?: UseOpenAIChatOptions) => {
 
   // Convert our app message format to OpenAI message format
   const formatMessages = (messages: ChatMessage[]): OpenAIMessage[] => {
-    // Start with existing conversation messages including system message and any intercepted messages
-    const formattedMessages: OpenAIMessage[] = [...conversationMessages];
+    // Start with system message
+    const systemMessage = createSystemMessage();
+    const formattedMessages: OpenAIMessage[] = [systemMessage];
 
-    // Add conversation history
+    // Simply convert UI messages to OpenAI format and append them in the order they appear
     messages.forEach(message => {
       if (message.type === 'user' || message.type === 'assistant' || message.type === 'tool') {
         const formattedMessage: OpenAIMessage = {
-          role: message.type,
-          content: message.content,
+          role: message.type as 'user' | 'assistant' | 'tool',
+          content: message.content
         };
 
         // Add tool calls if present
@@ -75,6 +86,7 @@ export const useOpenAIChat = (options?: UseOpenAIChatOptions) => {
       setMessages: React.Dispatch<React.SetStateAction<ChatMessage[]>>,
       onComplete?: () => void
     ): Promise<void> => {
+
       if (!isConfigValid()) {
         options?.onError?.('OpenAI API key is not configured');
         return;
@@ -91,7 +103,7 @@ export const useOpenAIChat = (options?: UseOpenAIChatOptions) => {
       };
 
       // Add empty message that will be updated with stream
-      // Make sure this message is always added at the end
+      // Simply append it to the end of the messages array
       setMessages(prev => [...prev, assistantMessage]);
 
       // Set searching state (this could be connected to a real search in the future)
@@ -237,11 +249,14 @@ export const useOpenAIChat = (options?: UseOpenAIChatOptions) => {
           }
         ];
 
+        // Format messages, which will also log them
+        const formattedMessages = formatMessages(messages);
+
         // Start streaming with the official OpenAI SDK
         await openAIService.streamChatCompletions(
           {
             model: OPENAI_CONFIG.model,
-            messages: formatMessages(messages),
+            messages: formattedMessages,
             temperature: OPENAI_CONFIG.defaultParams.temperature,
             max_tokens: OPENAI_CONFIG.defaultParams.max_tokens,
             stream: true,

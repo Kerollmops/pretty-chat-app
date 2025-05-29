@@ -18,6 +18,8 @@ interface Message {
   timestamp: Date;
 }
 
+
+
 const ChatInterface = () => {
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState('');
@@ -84,6 +86,11 @@ const ChatInterface = () => {
       timestamp: new Date(),
     };
 
+    // Add the new message to state first
+    const updatedMessages = [...messages, userMessage];
+    setMessages(updatedMessages);
+    setInput('');
+    
     // Append user message to OpenAI conversation context
     if (typeof window['_meiliAppendConversationMessage'] === 'function') {
       window['_meiliAppendConversationMessage']({
@@ -92,16 +99,14 @@ const ChatInterface = () => {
       });
     }
 
-    setMessages(prev => [...prev, userMessage]);
-    setInput('');
-
     if (!hasStartedChat) {
       setHasStartedChat(true);
     }
 
     try {
       // Use the OpenAI streaming chat completion with the official SDK
-      await streamChatCompletion(messages, setMessages);
+      // Pass the updated messages array that includes the new user message
+      await streamChatCompletion(updatedMessages, setMessages);
     } catch (error) {
       console.error("Error during chat completion:", error);
       addErrorMessage(error instanceof Error ? error.message : "An error occurred during chat completion");

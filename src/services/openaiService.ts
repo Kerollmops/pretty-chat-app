@@ -71,7 +71,7 @@ class OpenAIService {
     onError: (error: Error) => void,
     onComplete: () => void
   ): Promise<void> {
-    try {
+    try {      
       const stream = await this.client.chat.completions.create({
         model: options.model,
         messages: options.messages as OpenAI.ChatCompletionMessageParam[],
@@ -96,6 +96,7 @@ class OpenAIService {
         }
       }
 
+      // Call the onComplete callback when stream finishes
       onComplete();
     } catch (error) {
       onError(error instanceof Error ? error : new Error('Unknown error occurred'));
@@ -139,7 +140,7 @@ class OpenAIService {
   public async getChatCompletions(
     options: Omit<StreamOptions, 'stream'>
   ): Promise<OpenAI.Chat.Completions.ChatCompletion> {
-    return this.client.chat.completions.create({
+    const response = await this.client.chat.completions.create({
       model: options.model,
       messages: options.messages as OpenAI.ChatCompletionMessageParam[],
       temperature: options.temperature ?? 0.7,
@@ -148,6 +149,8 @@ class OpenAIService {
       tools: options.tools as OpenAI.ChatCompletionTool[],
       tool_choice: options.tool_choice as OpenAI.ChatCompletionToolChoiceOption,
     });
+    
+    return response;
   }
 }
 
