@@ -1,4 +1,3 @@
-
 import React, { useState, useRef, useEffect } from 'react';
 import ChatHeader from './ChatHeader';
 import ChatWelcome from './ChatWelcome';
@@ -19,15 +18,22 @@ interface Message {
   timestamp: Date;
 }
 
+interface SourcesByQuery {
+  callId: string;
+  indexUid: string;
+  query: string;
+  sources: Array<{ title: string; url: string; snippet: string }>;
+}
+
 const ChatInterface = () => {
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState('');
   const [hasStartedChat, setHasStartedChat] = useState(false);
   const [showSources, setShowSources] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
-  const [currentSources, setCurrentSources] = useState<Array<{ title: string; url: string; snippet: string }>>([]);
+  const [sourcesByQuery, setSourcesByQuery] = useState<SourcesByQuery[]>([]);
   const [isApiKeySet, setIsApiKeySet] = useState(isConfigValid());
-  const [searchProgress, setSearchProgress] = useState<{ indexUid: string; query: string } | null>(null);
+  const [searchProgress, setSearchProgress] = useState<{ callId: string; indexUid: string; query: string } | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
@@ -48,21 +54,32 @@ const ChatInterface = () => {
     });
 
     const unsubscribeSources = conversationManager.subscribeToSources((sourcesData) => {
+      // Format sources for display
+      const formattedSources = sourcesData.sources.map((source: object, index) => ({
+        title: source["title"] || `Source ${index + 1}`,
+        url: source["url"] || '#',
+        snippet: source["snippet"] || JSON.stringify(source).substring(0, 150) + '...'
+      }));
+
+      const newSourcesByQuery: SourcesByQuery = {
+        callId: sourcesData.callId,
+        indexUid: sourcesData.indexUid,
+        query: sourcesData.query,
+        sources: formattedSources
+      };
+
+      // Add to sources by query
+      setSourcesByQuery(prev => [...prev, newSourcesByQuery]);
+
       // Update the latest assistant message with sources
       setMessages(prev => {
         const updatedMessages = [...prev];
         const lastAssistantIndex = updatedMessages.map(m => m.type).lastIndexOf('assistant');
 
         if (lastAssistantIndex !== -1) {
-          const formattedSources = sourcesData.sources.map((source: object, index) => ({
-            title: source["title"] || `Source ${index + 1}`,
-            url: source["url"] || '#',
-            snippet: source["snippet"] || JSON.stringify(source).substring(0, 150) + '...'
-          }));
-
           updatedMessages[lastAssistantIndex] = {
             ...updatedMessages[lastAssistantIndex],
-            sources: updatedMessages[lastAssistantIndex].sources.concat(formattedSources)
+            sources: (updatedMessages[lastAssistantIndex].sources || []).concat(formattedSources)
           };
         }
 
@@ -93,7 +110,6 @@ const ChatInterface = () => {
   }, [isSearching]);
 
   const handleShowSources = (sources: Array<{ title: string; url: string; snippet: string }>) => {
-    setCurrentSources(sources);
     setShowSources(true);
   };
 
@@ -109,6 +125,7 @@ const ChatInterface = () => {
 
   const handleClearChat = () => {
     setMessages([]);
+    setSourcesByQuery([]);
     setHasStartedChat(false);
     setSearchProgress(null);
   };
@@ -203,7 +220,7 @@ const ChatInterface = () => {
       </div>
 
       <SourcesPanel
-        sources={currentSources}
+        sourcesByQuery={sourcesByQuery}
         isOpen={showSources}
         onClose={() => setShowSources(false)}
       />

@@ -1,21 +1,22 @@
 
 import React from 'react';
-import { X, ExternalLink } from 'lucide-react';
+import { X, ExternalLink, Search } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
-interface Source {
-  title: string;
-  url: string;
-  snippet: string;
+interface SourcesByQuery {
+  callId: string;
+  indexUid: string;
+  query: string;
+  sources: Array<{ title: string; url: string; snippet: string }>;
 }
 
 interface SourcesPanelProps {
-  sources: Source[];
+  sourcesByQuery: SourcesByQuery[];
   isOpen: boolean;
   onClose: () => void;
 }
 
-const SourcesPanel = ({ sources, isOpen, onClose }: SourcesPanelProps) => {
+const SourcesPanel = ({ sourcesByQuery, isOpen, onClose }: SourcesPanelProps) => {
   return (
     <>
       {/* Overlay for mobile */}
@@ -45,35 +46,62 @@ const SourcesPanel = ({ sources, isOpen, onClose }: SourcesPanelProps) => {
         </div>
         
         <div className="overflow-y-auto h-[calc(100vh-65px)] p-4">
-          <div className="space-y-4">
-            {sources.map((source, index) => (
-              <div
-                key={index}
-                className="border border-border rounded-lg p-4 hover:shadow-md transition-shadow duration-200 bg-card"
-              >
-                <div className="flex items-start justify-between mb-2">
-                  <h3 className="font-semibold text-card-foreground text-sm leading-tight">
-                    {source.title}
-                  </h3>
-                  <a
-                    href={source.url}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="ml-2 text-primary hover:text-primary/80 transition-colors duration-200 flex-shrink-0"
-                  >
-                    <ExternalLink className="h-4 w-4" />
-                  </a>
+          <div className="space-y-6">
+            {sourcesByQuery.map((queryGroup) => (
+              <div key={queryGroup.callId} className="space-y-3">
+                {/* Query header */}
+                <div className="bg-muted/50 rounded-lg p-3 border border-border">
+                  <div className="flex items-center gap-2 mb-2">
+                    <Search className="h-4 w-4 text-muted-foreground" />
+                    <span className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
+                      {queryGroup.indexUid}
+                    </span>
+                  </div>
+                  <p className="text-sm font-medium text-foreground italic">
+                    "{queryGroup.query}"
+                  </p>
                 </div>
                 
-                <p className="text-muted-foreground text-sm leading-relaxed mb-2">
-                  {source.snippet}
-                </p>
-                
-                <div className="text-xs text-muted-foreground break-all">
-                  {source.url}
+                {/* Sources for this query */}
+                <div className="space-y-3 pl-2">
+                  {queryGroup.sources.map((source, index) => (
+                    <div
+                      key={`${queryGroup.callId}-${index}`}
+                      className="border border-border rounded-lg p-3 hover:shadow-md transition-shadow duration-200 bg-card"
+                    >
+                      <div className="flex items-start justify-between mb-2">
+                        <h3 className="font-semibold text-card-foreground text-sm leading-tight">
+                          {source.title}
+                        </h3>
+                        <a
+                          href={source.url}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="ml-2 text-primary hover:text-primary/80 transition-colors duration-200 flex-shrink-0"
+                        >
+                          <ExternalLink className="h-4 w-4" />
+                        </a>
+                      </div>
+                      
+                      <p className="text-muted-foreground text-sm leading-relaxed mb-2">
+                        {source.snippet}
+                      </p>
+                      
+                      <div className="text-xs text-muted-foreground break-all">
+                        {source.url}
+                      </div>
+                    </div>
+                  ))}
                 </div>
               </div>
             ))}
+            
+            {sourcesByQuery.length === 0 && (
+              <div className="text-center text-muted-foreground py-8">
+                <Search className="h-8 w-8 mx-auto mb-2 opacity-50" />
+                <p className="text-sm">No sources available yet</p>
+              </div>
+            )}
           </div>
         </div>
       </div>

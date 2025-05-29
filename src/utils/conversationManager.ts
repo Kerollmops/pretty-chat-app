@@ -3,13 +3,27 @@ import { OpenAIMessage } from '@/types/chatTypes';
 import { createSystemMessage } from '@/config/openai';
 import { MeiliReportErrorParams, MeiliSearchProgressArguments, MeiliSearchProgressParams, MeiliSearchSourcesParams } from '@/services/toolInterceptorService';
 
+interface SearchQuery {
+  callId: string;
+  indexUid: string;
+  query: string;
+}
+
+interface SourcesByQuery {
+  callId: string;
+  indexUid: string;
+  query: string;
+  sources: Array<object>;
+}
+
 class ConversationManager {
   private static instance: ConversationManager;
   private conversationMessages: OpenAIMessage[] = [createSystemMessage()];
   private listeners: ((messages: OpenAIMessage[]) => void)[] = [];
-  private progressListeners: ((progress: { indexUid: string; query: string }) => void)[] = [];
+  private progressListeners: ((progress: SearchQuery) => void)[] = [];
   private errorListeners: ((error: { code: string; message: string }) => void)[] = [];
-  private sourcesListeners: ((sources: { callId: string; sources: Array<object> }) => void)[] = [];
+  private sourcesListeners: ((sources: SourcesByQuery) => void)[] = [];
+  private searchQueries: Map<string, SearchQuery> = new Map();
 
   public static getInstance(): ConversationManager {
     if (!ConversationManager.instance) {
@@ -39,7 +53,7 @@ class ConversationManager {
     };
   }
 
-  public subscribeToProgress(listener: (progress: { indexUid: string; query: string }) => void): () => void {
+  public subscribeToProgress(listener: (progress: SearchQuery) => void): () => void {
     this.progressListeners.push(listener);
     return () => {
       this.progressListeners = this.progressListeners.filter(l => l !== listener);
@@ -53,7 +67,7 @@ class ConversationManager {
     };
   }
 
-  public subscribeToSources(listener: (sources: { callId: string; sources: Array<object> }) => void): () => void {
+  public subscribeToSources(listener: (sources: SourcesByQuery) => void): () => void {
     this.sourcesListeners.push(listener);
     return () => {
       this.sourcesListeners = this.sourcesListeners.filter(l => l !== listener);
@@ -64,7 +78,7 @@ class ConversationManager {
     this.listeners.forEach(listener => listener(this.conversationMessages));
   }
 
-  private notifyProgressListeners(progress: { indexUid: string; query: string }): void {
+  private notifyProgressListeners(progress: SearchQuery): void {
     this.progressListeners.forEach(listener => listener(progress));
   }
 
@@ -72,7 +86,7 @@ class ConversationManager {
     this.errorListeners.forEach(listener => listener(error));
   }
 
-  private notifySourcesListeners(sources: { callId: string; sources: Array<object> }): void {
+  private notifySourcesListeners(sources: SourcesByQuery): void {
     this.sourcesListeners.forEach(listener => listener(sources));
   }
 
@@ -87,12 +101,17 @@ class ConversationManager {
 
     const originalProgressFn = window['_meiliSearchProgress'];
     window['_meiliSearchProgress'] = (progress: MeiliSearchProgressParams) => {
-      // Display the progress of a search with the index_uid and q
       const params: MeiliSearchProgressArguments = JSON.parse(progress.function_arguments);
-      this.notifyProgressListeners({
+      const searchQuery: SearchQuery = {
+        callId: progress.call_id,
         indexUid: params.index_uid,
         query: params.q
-      });
+      };
+      
+      // Store the search query for later reference
+      this.searchQueries.set(progress.call_id, searchQuery);
+      
+      this.notifyProgressListeners(searchQuery);
 
       if (originalProgressFn) {
         originalProgressFn(progress);
@@ -101,7 +120,6 @@ class ConversationManager {
 
     const originalErrorFn = window['_meiliReportError'];
     window['_meiliReportError'] = (error: MeiliReportErrorParams) => {
-      // Display the error on the frontend by notifying error listeners
       this.notifyErrorListeners({
         code: error.error_code,
         message: error.message
@@ -114,11 +132,19 @@ class ConversationManager {
 
     const originalSourceFn = window['_meiliSearchSources'];
     window['_meiliSearchSources'] = (sources: MeiliSearchSourcesParams) => {
-      // Add the sources to be integrated with assistant messages
-      this.notifySourcesListeners({
-        callId: sources.call_id,
-        sources: sources.sources
-      });
+      // Get the associated search query
+      const searchQuery = this.searchQueries.get(sources.call_id);
+      
+      if (searchQuery) {
+        const sourcesByQuery: SourcesByQuery = {
+          callId: sources.call_id,
+          indexUid: searchQuery.indexUid,
+          query: searchQuery.query,
+          sources: sources.sources
+        };
+        
+        this.notifySourcesListeners(sourcesByQuery);
+      }
 
       if (originalSourceFn) {
         originalSourceFn(sources);
