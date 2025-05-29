@@ -7,10 +7,19 @@ interface MeiliSearchProgressParams {
   function_parameters: string;
 }
 
+interface ToolCall {
+  type: string;
+  id: string;
+  function: {
+    name: string;
+    arguments: string;
+  };
+}
+
 interface MeiliAppendConversationMessageParams {
   role: string;
   content: string;
-  tool_calls: any[] | null;
+  tool_calls: ToolCall[] | null;
   tool_call_id: string | null;
 }
 
@@ -78,7 +87,7 @@ class ToolInterceptorService {
 
     // Register the tools on the global window object
     Object.entries(toolFunctions).forEach(([name, fn]) => {
-      (window as any)[name] = fn;
+      (window as Window & Record<string, (...args: unknown[]) => unknown>)[name] = fn;
     });
 
     this.registeredTools = true;

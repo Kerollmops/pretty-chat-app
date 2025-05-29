@@ -34,19 +34,19 @@ export const useOpenAIChat = (options?: UseOpenAIChatOptions) => {
     // Add conversation history
     messages.forEach(message => {
       if (message.type === 'user' || message.type === 'assistant' || message.type === 'tool') {
-        const formattedMessage: any = {
-          role: message.type,
+        const formattedMessage: OpenAIMessage = {
+          role: message.type as 'user' | 'assistant' | 'system',
           content: message.content
         };
 
         // Add tool calls if present
         if (message.tool_calls) {
-          formattedMessage.tool_calls = message.tool_calls;
+          (formattedMessage as OpenAIMessage & { tool_calls: ToolCall[] }).tool_calls = message.tool_calls;
         }
 
         // Add tool call ID if this is a tool response
         if (message.tool_call_id) {
-          formattedMessage.tool_call_id = message.tool_call_id;
+          (formattedMessage as OpenAIMessage & { tool_call_id: string }).tool_call_id = message.tool_call_id;
         }
 
         formattedMessages.push(formattedMessage);

@@ -16,7 +16,14 @@ interface MeiliSearchProgressParams {
 interface MeiliAppendConversationMessageParams {
   role: string;
   content: string;
-  tool_calls: any[] | null;
+  tool_calls: Array<{
+    id: string;
+    type: string;
+    function?: {
+      name: string;
+      arguments: string;
+    };
+  }> | null;
   tool_call_id: string | null;
 }
 

@@ -6,13 +6,22 @@ export interface Message {
   content: string;
 }
 
+export interface Tool {
+  type: string;
+  function: {
+    name: string;
+    description: string;
+    parameters: Record<string, unknown>;
+  };
+}
+
 export interface StreamOptions {
   model: string;
   messages: Message[];
   temperature?: number;
   max_tokens?: number;
   stream: boolean;
-  tools?: any[];
+  tools?: Tool[];
   tool_choice?: string | object;
 }
 
@@ -80,7 +89,7 @@ class OpenAIService {
         // Check for tool calls (this is where we would intercept them)
         const toolCall = chunk.choices[0]?.delta?.tool_calls?.[0];
         if (toolCall) {
-          this.processToolCall(toolCall);
+          this.processToolCall(toolCall as Partial<ToolCall>);
         }
       }
 
@@ -94,7 +103,7 @@ class OpenAIService {
    * Process a tool call from the LLM
    * @param toolCall The tool call object from the OpenAI API
    */
-  private processToolCall(toolCall: any): void {
+  private processToolCall(toolCall: Partial<ToolCall>): void {
     try {
       const toolName = toolCall.function?.name;
       const toolArgs = toolCall.function?.arguments;

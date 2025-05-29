@@ -1,14 +1,6 @@
 
-import React, { createContext, useContext, useEffect, useState } from 'react';
-
-type Theme = 'dark' | 'light' | 'system';
-
-type ThemeProviderContextType = {
-  theme: Theme;
-  setTheme: (theme: Theme) => void;
-};
-
-const ThemeProviderContext = createContext<ThemeProviderContextType | undefined>(undefined);
+import React, { useContext, useEffect, useState } from 'react';
+import { Theme, ThemeProviderContext, ThemeProviderContextType } from '@/lib/theme/theme-utils';
 
 export function ThemeProvider({ children }: { children: React.ReactNode }) {
   const [theme, setTheme] = useState<Theme>('system');
@@ -48,10 +40,5 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
   );
 }
 
-export const useTheme = () => {
-  const context = useContext(ThemeProviderContext);
-  if (context === undefined) {
-    throw new Error('useTheme must be used within a ThemeProvider');
-  }
-  return context;
-};
+// Moved to a separate file to avoid the react-refresh/only-export-components warning
+export { useTheme } from '@/lib/theme/use-theme';
