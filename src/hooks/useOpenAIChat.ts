@@ -1,3 +1,4 @@
+
 import { useState, useCallback, useEffect } from 'react';
 import OpenAIService, { Message as OpenAIMessage, ToolCall, Tool } from '@/services/openaiService';
 import { OPENAI_CONFIG, createSystemMessage, isConfigValid } from '@/config/openai';
@@ -33,8 +34,6 @@ export const useOpenAIChat = (options?: UseOpenAIChatOptions) => {
       // Append message to conversationMessages
       setConversationMessages(prev => {
         console.log('Appending message:', newMessage);
-
-        // Always append to the end of the array
         return [...prev, newMessage];
       });
 
@@ -49,40 +48,9 @@ export const useOpenAIChat = (options?: UseOpenAIChatOptions) => {
     };
   }, []);
 
-  // Convert our app message format to OpenAI message format
-  const formatMessages = (messages: ChatMessage[]): OpenAIMessage[] => {
-    // Start with system message
-    const systemMessage = createSystemMessage();
-    const formattedMessages: OpenAIMessage[] = [systemMessage];
-
-    // Simply convert UI messages to OpenAI format and append them in the order they appear
-    messages.forEach(message => {
-      if (message.type === 'user' || message.type === 'assistant' || message.type === 'tool') {
-        const formattedMessage: OpenAIMessage = {
-          role: message.type as 'user' | 'assistant' | 'tool',
-          content: message.content
-        };
-
-        // Add tool calls if present
-        if (message.tool_calls) {
-          (formattedMessage as OpenAIMessage & { tool_calls: ToolCall[] }).tool_calls = message.tool_calls;
-        }
-
-        // Add tool call ID if this is a tool response
-        if (message.tool_call_id) {
-          formattedMessage.tool_call_id = message.tool_call_id;
-        }
-
-        formattedMessages.push(formattedMessage);
-      }
-    });
-
-    return formattedMessages;
-  };
-
   const streamChatCompletion = useCallback(
     async (
-      messages: ChatMessage[],
+      uiMessages: ChatMessage[],
       setMessages: React.Dispatch<React.SetStateAction<ChatMessage[]>>,
       onComplete?: () => void
     ): Promise<void> => {
@@ -90,6 +58,17 @@ export const useOpenAIChat = (options?: UseOpenAIChatOptions) => {
       if (!isConfigValid()) {
         options?.onError?.('OpenAI API key is not configured');
         return;
+      }
+
+      // Add the latest user message to conversationMessages
+      const latestUserMessage = uiMessages[uiMessages.length - 1];
+      if (latestUserMessage && latestUserMessage.type === 'user') {
+        const userOpenAIMessage: OpenAIMessage = {
+          role: 'user',
+          content: latestUserMessage.content
+        };
+        
+        setConversationMessages(prev => [...prev, userOpenAIMessage]);
       }
 
       // Create a placeholder message for streaming with a distinctive ID
@@ -103,14 +82,13 @@ export const useOpenAIChat = (options?: UseOpenAIChatOptions) => {
       };
 
       // Add empty message that will be updated with stream
-      // Simply append it to the end of the messages array
       setMessages(prev => [...prev, assistantMessage]);
 
-      // Set searching state (this could be connected to a real search in the future)
+      // Set searching state
       setIsSearching(true);
 
       try {
-        // Simulate search phase - replace with actual search implementation if needed
+        // Simulate search phase
         await new Promise(resolve => setTimeout(resolve, 1000));
 
         setIsSearching(false);
@@ -249,14 +227,13 @@ export const useOpenAIChat = (options?: UseOpenAIChatOptions) => {
           }
         ];
 
-        // Format messages, which will also log them
-        const formattedMessages = formatMessages(messages);
+        console.log('Sending conversationMessages to OpenAI:', conversationMessages);
 
-        // Start streaming with the official OpenAI SDK
+        // Use conversationMessages directly instead of formatting UI messages
         await openAIService.streamChatCompletions(
           {
             model: OPENAI_CONFIG.model,
-            messages: formattedMessages,
+            messages: conversationMessages,
             temperature: OPENAI_CONFIG.defaultParams.temperature,
             max_tokens: OPENAI_CONFIG.defaultParams.max_tokens,
             stream: true,
@@ -283,9 +260,21 @@ export const useOpenAIChat = (options?: UseOpenAIChatOptions) => {
           // Handle completion
           () => {
             setIsLoading(false);
-            // Add sources when complete (replace with real sources if available)
-            setMessages(prev =>
-              prev.map(msg =>
+            
+            // Get the final assistant message content
+            setMessages(prev => {
+              const finalMessage = prev.find(msg => msg.id === assistantMessageId);
+              if (finalMessage && finalMessage.content) {
+                // Add the assistant's response to conversationMessages
+                const assistantOpenAIMessage: OpenAIMessage = {
+                  role: 'assistant',
+                  content: finalMessage.content
+                };
+                setConversationMessages(prevConv => [...prevConv, assistantOpenAIMessage]);
+              }
+
+              // Add sources when complete
+              return prev.map(msg =>
                 msg.id === assistantMessageId
                   ? {
                       ...msg,
@@ -303,8 +292,8 @@ export const useOpenAIChat = (options?: UseOpenAIChatOptions) => {
                       ]
                     }
                   : msg
-              )
-            );
+              );
+            });
 
             onComplete?.();
           }
@@ -315,7 +304,7 @@ export const useOpenAIChat = (options?: UseOpenAIChatOptions) => {
         options?.onError?.(error instanceof Error ? error.message : 'An unknown error occurred');
       }
     },
-    [options]
+    [conversationMessages, options]
   );
 
   return {

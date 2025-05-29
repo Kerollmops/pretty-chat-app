@@ -10,6 +10,7 @@ import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { useOpenAIChat } from '@/hooks/useOpenAIChat';
 import { isConfigValid } from '@/config/openai';
+
 interface Message {
   id: string;
   type: 'user' | 'assistant' | 'error';
