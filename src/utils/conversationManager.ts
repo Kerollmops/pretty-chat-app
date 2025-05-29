@@ -107,11 +107,19 @@ class ConversationManager {
         indexUid: params.index_uid,
         query: params.q
       };
-      
+
       // Store the search query for later reference
       this.searchQueries.set(progress.call_id, searchQuery);
-      
+
       this.notifyProgressListeners(searchQuery);
+
+      // When a tool call is made we must register a newline
+      const messages = this.getMessages();
+      if (messages.length > 0) {
+        if (messages[messages.length - 1].content) {
+          messages[messages.length - 1].content.concat('\n');
+        }
+      }
 
       if (originalProgressFn) {
         originalProgressFn(progress);
@@ -134,7 +142,7 @@ class ConversationManager {
     window['_meiliSearchSources'] = (sources: MeiliSearchSourcesParams) => {
       // Get the associated search query
       const searchQuery = this.searchQueries.get(sources.call_id);
-      
+
       if (searchQuery) {
         const sourcesByQuery: SourcesByQuery = {
           callId: sources.call_id,
@@ -142,7 +150,7 @@ class ConversationManager {
           query: searchQuery.query,
           sources: sources.sources
         };
-        
+
         this.notifySourcesListeners(sourcesByQuery);
       }
 
