@@ -83,13 +83,6 @@ const ChatInterface = () => {
     const updatedMessages = [...messages, userMessage];
     setMessages(updatedMessages);
     setInput('');
-    
-    if (typeof window['_meiliAppendConversationMessage'] === 'function') {
-      window['_meiliAppendConversationMessage']({
-        role: 'user',
-        content: input.trim(),
-      });
-    }
 
     if (!hasStartedChat) {
       setHasStartedChat(true);
