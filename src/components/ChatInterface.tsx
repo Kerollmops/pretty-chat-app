@@ -5,7 +5,6 @@ import ChatMessages from './ChatMessages';
 import ChatInputArea from './ChatInputArea';
 import SourcesPanel from './SourcesPanel';
 import SettingsModal from './SettingsModal';
-import ProgressIndicator from './ProgressIndicator';
 import { useOpenAIChat } from '@/hooks/useOpenAIChat';
 import { isConfigValid } from '@/config/openai';
 import ConversationManager from '@/utils/conversationManager';

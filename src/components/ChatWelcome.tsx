@@ -1,7 +1,4 @@
 
-import React from 'react';
-import ChatInputArea from './ChatInputArea';
-
 interface ChatWelcomeProps {
   input: string;
   setInput: (value: string) => void;

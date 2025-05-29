@@ -59,9 +59,6 @@ export class ChatStreamHandler {
       const openAIService = OpenAIService.getInstance(OPENAI_CONFIG.apiUrl, OPENAI_CONFIG.apiKey);
       const tools = createChatTools();
       const conversationMessages = this.conversationManager.getMessages();
-
-      console.log('Sending conversationMessages to OpenAI:', conversationMessages);
-
       await openAIService.streamChatCompletions(
         {
           model: OPENAI_CONFIG.model,

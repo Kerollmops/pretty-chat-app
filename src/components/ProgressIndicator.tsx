@@ -1,6 +1,3 @@
-
-import React from 'react';
-
 interface ProgressIndicatorProps {
   message?: string;
 }
