@@ -1,4 +1,4 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import OpenAIService, { Message as OpenAIMessage, ToolCall, Tool } from '@/services/openaiService';
 import { OPENAI_CONFIG, createSystemMessage, isConfigValid } from '@/config/openai';
 import ToolInterceptorService from '@/services/toolInterceptorService';
@@ -20,23 +20,36 @@ interface UseOpenAIChatOptions {
 export const useOpenAIChat = (options?: UseOpenAIChatOptions) => {
   const [isLoading, setIsLoading] = useState(false);
   const [isSearching, setIsSearching] = useState(false);
+  const [conversationMessages, setConversationMessages] = useState<OpenAIMessage[]>([createSystemMessage()]);
 
   // Ensure tool interceptor is initialized
-  useCallback(() => {
+  useEffect(() => {
     ToolInterceptorService.getInstance();
+
+    // Override the original _meiliAppendConversationMessage function to add messages to our context
+    const originalFn = window['_meiliAppendConversationMessage'];
+    window['_meiliAppendConversationMessage'] = (newMessage: OpenAIMessage) => {
+      setConversationMessages(prev => [...prev, newMessage]);
+      console.log('Added message to conversation context:', newMessage);
+    };
+
+    return () => {
+      // Restore the original function when component unmounts
+      window['_meiliAppendConversationMessage'] = originalFn;
+    };
   }, []);
 
   // Convert our app message format to OpenAI message format
   const formatMessages = (messages: ChatMessage[]): OpenAIMessage[] => {
-    // Start with system message
-    const formattedMessages: OpenAIMessage[] = [createSystemMessage()];
+    // Start with existing conversation messages including system message and any intercepted messages
+    const formattedMessages: OpenAIMessage[] = [...conversationMessages];
 
     // Add conversation history
     messages.forEach(message => {
       if (message.type === 'user' || message.type === 'assistant' || message.type === 'tool') {
         const formattedMessage: OpenAIMessage = {
           role: message.type,
-          content: message.content
+          content: message.content,
         };
 
         // Add tool calls if present
@@ -238,7 +251,7 @@ export const useOpenAIChat = (options?: UseOpenAIChatOptions) => {
           // Handle each chunk of the stream
           (chunk: string) => {
             // Find and update only the assistant message with the matching ID
-            setMessages(prev => 
+            setMessages(prev =>
               prev.map(msg => {
                 if (msg.id === assistantMessageId) {
                   return { ...msg, content: msg.content + chunk };
@@ -256,7 +269,7 @@ export const useOpenAIChat = (options?: UseOpenAIChatOptions) => {
           () => {
             setIsLoading(false);
             // Add sources when complete (replace with real sources if available)
-            setMessages(prev => 
+            setMessages(prev =>
               prev.map(msg =>
                 msg.id === assistantMessageId
                   ? {

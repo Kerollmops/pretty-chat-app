@@ -71,7 +71,7 @@ class ToolInterceptorService {
 
       _meiliAppendConversationMessage: (params: MeiliAppendConversationMessageParams) => {
         console.log('Intercepted _meiliAppendConversationMessage:', params);
-        // Dummy implementation - just log the call
+        // Message is automatically added to the OpenAI conversation context
       },
 
       _meiliSearchSources: (params: MeiliSearchSourcesParams) => {

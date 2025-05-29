@@ -76,6 +76,22 @@ const ToolInterceptorTest: React.FC = () => {
     }
   };
 
+  const testAppendUserMessage = () => {
+    if (typeof window['_meiliAppendConversationMessage'] === 'function') {
+      const params: MeiliAppendConversationMessageParams = {
+        role: 'user',
+        content: 'This is a test message from the user',
+        tool_calls: null,
+        tool_call_id: null
+      };
+      
+      window['_meiliAppendConversationMessage'](params);
+      addLog(`Called _meiliAppendConversationMessage with user message params: ${JSON.stringify(params)}`);
+    } else {
+      addLog('Error: _meiliAppendConversationMessage is not registered');
+    }
+  };
+
   const testSearchSources = () => {
     if (typeof window['_meiliSearchSources'] === 'function') {
       const params: MeiliSearchSourcesParams = {
@@ -124,9 +140,10 @@ const ToolInterceptorTest: React.FC = () => {
         </CardHeader>
         <CardContent>
           <Tabs defaultValue="search-progress" value={activeTab} onValueChange={setActiveTab}>
-            <TabsList className="grid grid-cols-4">
+            <TabsList className="grid grid-cols-5">
               <TabsTrigger value="search-progress">Search Progress</TabsTrigger>
-              <TabsTrigger value="append-message">Append Message</TabsTrigger>
+              <TabsTrigger value="append-message">Append Assistant Msg</TabsTrigger>
+              <TabsTrigger value="append-user-message">Append User Msg</TabsTrigger>
               <TabsTrigger value="search-sources">Search Sources</TabsTrigger>
               <TabsTrigger value="report-error">Report Error</TabsTrigger>
             </TabsList>
@@ -150,14 +167,29 @@ const ToolInterceptorTest: React.FC = () => {
               <div>
                 <h3 className="text-lg font-medium">Test _meiliAppendConversationMessage</h3>
                 <p className="text-sm text-muted-foreground">
-                  Simulates appending a new message to the conversation
+                  Simulates appending a new assistant message to the conversation
                 </p>
               </div>
               <Button 
                 onClick={testAppendConversationMessage}
                 className="w-full"
               >
-                Test Append Message <ChevronRight className="h-4 w-4 ml-2" />
+                Test Append Assistant Message <ChevronRight className="h-4 w-4 ml-2" />
+              </Button>
+            </TabsContent>
+            
+            <TabsContent value="append-user-message" className="space-y-4 mt-4">
+              <div>
+                <h3 className="text-lg font-medium">Test Append User Message</h3>
+                <p className="text-sm text-muted-foreground">
+                  Simulates appending a new user message to the conversation
+                </p>
+              </div>
+              <Button 
+                onClick={testAppendUserMessage}
+                className="w-full"
+              >
+                Test Append User Message <ChevronRight className="h-4 w-4 ml-2" />
               </Button>
             </TabsContent>
             

@@ -10,7 +10,6 @@ import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { useOpenAIChat } from '@/hooks/useOpenAIChat';
 import { isConfigValid } from '@/config/openai';
-
 interface Message {
   id: string;
   type: 'user' | 'assistant' | 'error';
@@ -84,6 +83,14 @@ const ChatInterface = () => {
       content: input.trim(),
       timestamp: new Date(),
     };
+
+    // Append user message to OpenAI conversation context
+    if (typeof window['_meiliAppendConversationMessage'] === 'function') {
+      window['_meiliAppendConversationMessage']({
+        role: 'user',
+        content: input.trim(),
+      });
+    }
 
     setMessages(prev => [...prev, userMessage]);
     setInput('');

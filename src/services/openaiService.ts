@@ -4,6 +4,7 @@ import OpenAI from 'openai';
 export interface Message {
   role: 'user' | 'assistant' | 'system' | 'tool';
   content: string;
+  tool_calls?: ToolCall[];
   tool_call_id?: string;
 }
 
