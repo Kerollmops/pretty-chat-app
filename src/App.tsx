@@ -11,7 +11,6 @@ import MarkdownTest from "./pages/MarkdownTest";
 import ToolTest from "./pages/ToolTest";
 
 const queryClient = new QueryClient();
-const basename = import.meta.env.VITE_BASE_URL || '/';
 
 const App = () => (
   <QueryClientProvider client={queryClient}>
@@ -19,7 +18,7 @@ const App = () => (
       <TooltipProvider>
         <Toaster />
         <Sonner />
-        <BrowserRouter basename={basename}>
+        <BrowserRouter basename={import.meta.env.BASE_URL}>
           <Routes>
             <Route path="/" element={<Index />} />
             <Route path="/markdown-test" element={<MarkdownTest />} />
