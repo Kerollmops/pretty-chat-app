@@ -66,20 +66,20 @@ const SettingsModal = ({ isOpen, onClose }: SettingsModalProps) => {
               id="api-url"
               value={apiUrl}
               onChange={(e) => setApiUrl(e.target.value)}
-              placeholder="http://localhost:7700"
+              placeholder="https://ms-abcd1234-123.heaven.meilisearch.io"
             />
           </div>
           <div className="grid gap-2">
-            <Label htmlFor="api-key">API Key</Label>
+            <Label htmlFor="api-key">API Key or Tenant Token</Label>
             <Input
               id="api-key"
               type="password"
               value={apiKey}
               onChange={(e) => setApiKey(e.target.value)}
-              placeholder="sk-..."
+              placeholder="abc123..."
             />
             <p className="text-xs text-muted-foreground">
-              Your API key is stored locally and never sent to our servers.
+              Your Meilisearch API key or tenant token to access the chat functionnality.
             </p>
           </div>
           <div className="grid gap-2">
