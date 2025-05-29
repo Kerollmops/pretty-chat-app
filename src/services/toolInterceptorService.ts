@@ -87,7 +87,7 @@ class ToolInterceptorService {
 
     // Register the tools on the global window object
     Object.entries(toolFunctions).forEach(([name, fn]) => {
-      (window as Window & Record<string, (...args: unknown[]) => unknown>)[name] = fn;
+      (window as unknown as Record<string, (...args: unknown[]) => unknown>)[name] = fn;
     });
 
     this.registeredTools = true;

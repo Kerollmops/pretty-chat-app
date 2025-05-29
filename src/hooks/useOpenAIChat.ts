@@ -1,5 +1,5 @@
 import { useState, useCallback } from 'react';
-import OpenAIService, { Message as OpenAIMessage, ToolCall } from '@/services/openaiService';
+import OpenAIService, { Message as OpenAIMessage, ToolCall, Tool } from '@/services/openaiService';
 import { OPENAI_CONFIG, createSystemMessage, isConfigValid } from '@/config/openai';
 import ToolInterceptorService from '@/services/toolInterceptorService';
 
@@ -35,7 +35,7 @@ export const useOpenAIChat = (options?: UseOpenAIChatOptions) => {
     messages.forEach(message => {
       if (message.type === 'user' || message.type === 'assistant' || message.type === 'tool') {
         const formattedMessage: OpenAIMessage = {
-          role: message.type as 'user' | 'assistant' | 'system',
+          role: message.type,
           content: message.content
         };
 
@@ -46,7 +46,7 @@ export const useOpenAIChat = (options?: UseOpenAIChatOptions) => {
 
         // Add tool call ID if this is a tool response
         if (message.tool_call_id) {
-          (formattedMessage as OpenAIMessage & { tool_call_id: string }).tool_call_id = message.tool_call_id;
+          formattedMessage.tool_call_id = message.tool_call_id;
         }
 
         formattedMessages.push(formattedMessage);
@@ -95,7 +95,7 @@ export const useOpenAIChat = (options?: UseOpenAIChatOptions) => {
         const openAIService = OpenAIService.getInstance(OPENAI_CONFIG.apiUrl, OPENAI_CONFIG.apiKey);
 
         // Register tool functions for the LLM to call
-        const tools = [
+        const tools: Tool[] = [
           {
             type: "function",
             function: {
@@ -177,8 +177,7 @@ export const useOpenAIChat = (options?: UseOpenAIChatOptions) => {
                 },
                 required: ["role", "content", "tool_calls", "tool_call_id"],
                 additionalProperties: false
-              },
-              strict: true
+              }
             }
           },
           {

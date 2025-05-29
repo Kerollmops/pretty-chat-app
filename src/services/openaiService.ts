@@ -2,12 +2,14 @@ import OpenAI from 'openai';
 
 // Define interfaces for cleaner typing
 export interface Message {
-  role: 'user' | 'assistant' | 'system';
+  role: 'user' | 'assistant' | 'system' | 'tool';
   content: string;
+  tool_call_id?: string;
 }
 
+// Tool types that match OpenAI's API types
 export interface Tool {
-  type: string;
+  type: "function";
   function: {
     name: string;
     description: string;
@@ -22,12 +24,12 @@ export interface StreamOptions {
   max_tokens?: number;
   stream: boolean;
   tools?: Tool[];
-  tool_choice?: string | object;
+  tool_choice?: "auto" | "none" | { type: "function"; function: { name: string } };
 }
 
 // Tool call related interfaces
 export interface ToolCall {
-  type: string;
+  type: "function";
   id: string;
   function: {
     name: string;
@@ -71,12 +73,12 @@ class OpenAIService {
     try {
       const stream = await this.client.chat.completions.create({
         model: options.model,
-        messages: options.messages,
+        messages: options.messages as OpenAI.ChatCompletionMessageParam[],
         temperature: options.temperature ?? 0.7,
         max_tokens: options.max_tokens,
         stream: true,
-        tools: options.tools,
-        tool_choice: options.tool_choice,
+        tools: options.tools as OpenAI.ChatCompletionTool[],
+        tool_choice: options.tool_choice as OpenAI.ChatCompletionToolChoiceOption,
       });
 
       // Process the stream using the OpenAI SDK
@@ -103,7 +105,7 @@ class OpenAIService {
    * Process a tool call from the LLM
    * @param toolCall The tool call object from the OpenAI API
    */
-  private processToolCall(toolCall: Partial<ToolCall>): void {
+  private processToolCall(toolCall: Partial<ToolCall> | OpenAI.ChatCompletionMessageToolCall): void {
     try {
       const toolName = toolCall.function?.name;
       const toolArgs = toolCall.function?.arguments;
@@ -138,12 +140,12 @@ class OpenAIService {
   ): Promise<OpenAI.Chat.Completions.ChatCompletion> {
     return this.client.chat.completions.create({
       model: options.model,
-      messages: options.messages,
+      messages: options.messages as OpenAI.ChatCompletionMessageParam[],
       temperature: options.temperature ?? 0.7,
       max_tokens: options.max_tokens,
       stream: false,
-      tools: options.tools,
-      tool_choice: options.tool_choice,
+      tools: options.tools as OpenAI.ChatCompletionTool[],
+      tool_choice: options.tool_choice as OpenAI.ChatCompletionToolChoiceOption,
     });
   }
 }

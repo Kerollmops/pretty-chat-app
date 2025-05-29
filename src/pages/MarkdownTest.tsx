@@ -127,7 +127,7 @@ That's it for the markdown test!
               pre: ({ node, ...props }) => (
                 <pre {...props} className="p-4 overflow-x-auto" />
               ),
-              code: ({ node, inline, className, children, ...props }) => (
+              code: ({ node, inline, className, children, ...props }: { node?: unknown; inline?: boolean; className?: string; children?: React.ReactNode }) => (
                 inline ? 
                 <code className={className} {...props}>{children}</code> :
                 <code className={cn("block text-sm p-4", className)} {...props}>{children}</code>
