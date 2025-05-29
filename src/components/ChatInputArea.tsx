@@ -1,5 +1,5 @@
 
-import React from 'react';
+import React, { useEffect } from 'react';
 import { Send } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
@@ -21,6 +21,13 @@ const ChatInputArea = ({
   isLoading,
   textareaRef
 }: ChatInputAreaProps) => {
+  // Refocus when the boolean changes
+    useEffect(() => {
+      if (!isLoading && textareaRef.current) {
+        textareaRef.current.focus();
+      }
+    }, [isLoading, textareaRef]);
+
   return (
     <div className="bg-background p-4 flex-shrink-0">
       <div className="max-w-3xl mx-auto">
