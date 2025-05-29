@@ -37,7 +37,7 @@ const MessageBubble = ({ message, onShowSources }: MessageBubbleProps) => {
     return (
       <div className="flex justify-end animate-fade-in">
         <div className="max-w-[70%] ml-12">
-          <div className="rounded-2xl px-4 py-3 bg-gray-900 text-white ml-auto">
+          <div className="rounded-2xl px-4 py-3 bg-primary text-primary-foreground ml-auto">
             <div className="whitespace-pre-wrap text-[15px] leading-relaxed">
               {message.content}
             </div>
@@ -97,7 +97,7 @@ const MessageBubble = ({ message, onShowSources }: MessageBubbleProps) => {
               variant="outline"
               size="sm"
               onClick={() => onShowSources(message.sources!)}
-              className="text-xs h-7 px-3 bg-white hover:bg-gray-50 border-gray-200 text-gray-600 hover:text-gray-800 rounded-full"
+              className="text-xs h-7 px-3 bg-background hover:bg-muted border-border text-muted-foreground hover:text-foreground rounded-full"
             >
               <FileText className="h-3 w-3" />
               {message.sources.length} source{message.sources.length > 1 ? 's' : ''}

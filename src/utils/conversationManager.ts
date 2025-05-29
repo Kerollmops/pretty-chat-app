@@ -7,6 +7,9 @@ class ConversationManager {
   private static instance: ConversationManager;
   private conversationMessages: OpenAIMessage[] = [createSystemMessage()];
   private listeners: ((messages: OpenAIMessage[]) => void)[] = [];
+  private progressListeners: ((progress: { indexUid: string; query: string }) => void)[] = [];
+  private errorListeners: ((error: { code: string; message: string }) => void)[] = [];
+  private sourcesListeners: ((sources: { callId: string; sources: Array<object> }) => void)[] = [];
 
   public static getInstance(): ConversationManager {
     if (!ConversationManager.instance) {
@@ -36,8 +39,41 @@ class ConversationManager {
     };
   }
 
+  public subscribeToProgress(listener: (progress: { indexUid: string; query: string }) => void): () => void {
+    this.progressListeners.push(listener);
+    return () => {
+      this.progressListeners = this.progressListeners.filter(l => l !== listener);
+    };
+  }
+
+  public subscribeToErrors(listener: (error: { code: string; message: string }) => void): () => void {
+    this.errorListeners.push(listener);
+    return () => {
+      this.errorListeners = this.errorListeners.filter(l => l !== listener);
+    };
+  }
+
+  public subscribeToSources(listener: (sources: { callId: string; sources: Array<object> }) => void): () => void {
+    this.sourcesListeners.push(listener);
+    return () => {
+      this.sourcesListeners = this.sourcesListeners.filter(l => l !== listener);
+    };
+  }
+
   private notifyListeners(): void {
     this.listeners.forEach(listener => listener(this.conversationMessages));
+  }
+
+  private notifyProgressListeners(progress: { indexUid: string; query: string }): void {
+    this.progressListeners.forEach(listener => listener(progress));
+  }
+
+  private notifyErrorListeners(error: { code: string; message: string }): void {
+    this.errorListeners.forEach(listener => listener(error));
+  }
+
+  private notifySourcesListeners(sources: { callId: string; sources: Array<object> }): void {
+    this.sourcesListeners.forEach(listener => listener(sources));
   }
 
   public initializeToolInterceptor(): void {
@@ -51,8 +87,12 @@ class ConversationManager {
 
     const originalProgressFn = window['_meiliSearchProgress'];
     window['_meiliSearchProgress'] = (progress: MeiliSearchProgressParams) => {
-      // TODO: Display the progress of a search with the index_uid and q
-      //       By using the ProgressIndicator.
+      // Display the progress of a search with the index_uid and q
+      this.notifyProgressListeners({
+        indexUid: progress.function_parameters.index_uid,
+        query: progress.function_parameters.q
+      });
+      
       if (originalProgressFn) {
         originalProgressFn(progress);
       }
@@ -60,7 +100,12 @@ class ConversationManager {
 
     const originalErrorFn = window['_meiliReportError'];
     window['_meiliReportError'] = (error: MeiliReportErrorParams) => {
-      // TODO: Display the error on the frontend
+      // Display the error on the frontend by notifying error listeners
+      this.notifyErrorListeners({
+        code: error.error_code,
+        message: error.message
+      });
+      
       if (originalErrorFn) {
         originalErrorFn(error);
       }
@@ -68,8 +113,12 @@ class ConversationManager {
 
     const originalSourceFn = window['_meiliSearchSources'];
     window['_meiliSearchSources'] = (sources: MeiliSearchSourcesParams) => {
-      // TODO: Add the sources on the assistant message so
-      //       that they can be seen on the side panel.
+      // Add the sources to be integrated with assistant messages
+      this.notifySourcesListeners({
+        callId: sources.call_id,
+        sources: sources.sources
+      });
+      
       if (originalSourceFn) {
         originalSourceFn(sources);
       }

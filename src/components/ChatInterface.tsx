@@ -6,8 +6,10 @@ import ChatMessages from './ChatMessages';
 import ChatInputArea from './ChatInputArea';
 import SourcesPanel from './SourcesPanel';
 import SettingsModal from './SettingsModal';
+import ProgressIndicator from './ProgressIndicator';
 import { useOpenAIChat } from '@/hooks/useOpenAIChat';
 import { isConfigValid } from '@/config/openai';
+import ConversationManager from '@/utils/conversationManager';
 
 interface Message {
   id: string;
@@ -25,12 +27,55 @@ const ChatInterface = () => {
   const [showSettings, setShowSettings] = useState(false);
   const [currentSources, setCurrentSources] = useState<Array<{ title: string; url: string; snippet: string }>>([]);
   const [isApiKeySet, setIsApiKeySet] = useState(isConfigValid());
+  const [searchProgress, setSearchProgress] = useState<{ indexUid: string; query: string } | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
   const { streamChatCompletion, isLoading, isSearching } = useOpenAIChat({
     onError: (errorMessage) => addErrorMessage(errorMessage)
   });
+
+  // Subscribe to ConversationManager events
+  useEffect(() => {
+    const conversationManager = ConversationManager.getInstance();
+    
+    const unsubscribeProgress = conversationManager.subscribeToProgress((progress) => {
+      setSearchProgress(progress);
+    });
+
+    const unsubscribeErrors = conversationManager.subscribeToErrors((error) => {
+      addErrorMessage(`${error.code}: ${error.message}`);
+    });
+
+    const unsubscribeSources = conversationManager.subscribeToSources((sourcesData) => {
+      // Update the latest assistant message with sources
+      setMessages(prev => {
+        const updatedMessages = [...prev];
+        const lastAssistantIndex = updatedMessages.map(m => m.type).lastIndexOf('assistant');
+        
+        if (lastAssistantIndex !== -1) {
+          const formattedSources = sourcesData.sources.map((source: any, index) => ({
+            title: source.title || `Source ${index + 1}`,
+            url: source.url || '#',
+            snippet: source.snippet || JSON.stringify(source).substring(0, 150) + '...'
+          }));
+          
+          updatedMessages[lastAssistantIndex] = {
+            ...updatedMessages[lastAssistantIndex],
+            sources: formattedSources
+          };
+        }
+        
+        return updatedMessages;
+      });
+    });
+
+    return () => {
+      unsubscribeProgress();
+      unsubscribeErrors();
+      unsubscribeSources();
+    };
+  }, []);
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -39,6 +84,13 @@ const ChatInterface = () => {
   useEffect(() => {
     scrollToBottom();
   }, [messages]);
+
+  useEffect(() => {
+    // Clear search progress when not searching
+    if (!isSearching) {
+      setSearchProgress(null);
+    }
+  }, [isSearching]);
 
   const handleShowSources = (sources: Array<{ title: string; url: string; snippet: string }>) => {
     setCurrentSources(sources);
@@ -58,6 +110,7 @@ const ChatInterface = () => {
   const handleClearChat = () => {
     setMessages([]);
     setHasStartedChat(false);
+    setSearchProgress(null);
   };
 
   const dismissError = (messageId: string) => {
@@ -132,6 +185,7 @@ const ChatInterface = () => {
               messages={messages}
               isSearching={isSearching}
               isLoading={isLoading}
+              searchProgress={searchProgress}
               onShowSources={handleShowSources}
               onDismissError={dismissError}
               messagesEndRef={messagesEndRef}

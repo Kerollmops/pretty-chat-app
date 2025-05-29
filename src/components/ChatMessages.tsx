@@ -16,6 +16,7 @@ interface ChatMessagesProps {
   messages: Message[];
   isSearching: boolean;
   isLoading: boolean;
+  searchProgress?: { indexUid: string; query: string } | null;
   onShowSources: (sources: Array<{ title: string; url: string; snippet: string }>) => void;
   onDismissError: (messageId: string) => void;
   messagesEndRef: React.RefObject<HTMLDivElement>;
@@ -25,6 +26,7 @@ const ChatMessages = ({
   messages, 
   isSearching, 
   isLoading, 
+  searchProgress,
   onShowSources, 
   onDismissError, 
   messagesEndRef 
@@ -51,7 +53,13 @@ const ChatMessages = ({
           );
         })}
 
-        {isSearching && (
+        {isSearching && searchProgress && (
+          <ProgressIndicator 
+            message={`Searching in index "${searchProgress.indexUid}" for: *${searchProgress.query}*`} 
+          />
+        )}
+
+        {isSearching && !searchProgress && (
           <ProgressIndicator message="Searching for documents..." />
         )}
 
