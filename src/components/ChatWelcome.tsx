@@ -11,13 +11,13 @@ interface ChatWelcomeProps {
   textareaRef: React.RefObject<HTMLTextAreaElement>;
 }
 
-const ChatWelcome = ({ 
-  input, 
-  setInput, 
-  onSend, 
-  onKeyPress, 
-  isLoading, 
-  textareaRef 
+const ChatWelcome = ({
+  input,
+  setInput,
+  onSend,
+  onKeyPress,
+  isLoading,
+  textareaRef
 }: ChatWelcomeProps) => {
   return (
     <div className="flex-1 flex items-center justify-center px-4">
@@ -33,16 +33,17 @@ const ChatWelcome = ({
         </div>
 
         <div className="relative">
-          <div className="relative border border-border rounded-xl overflow-hidden hover:shadow-ld focus-within:shadow-lg transition-shadow duration-200">
+          <div className="relative border border-border rounded-xl overflow-hidden hover:shadow-lg focus-within:shadow-md transition-shadow duration-200">
             <textarea
               ref={textareaRef}
               value={input}
               onChange={(e) => setInput(e.target.value)}
-              onKeyPress={onKeyPress}
+              onKeyUp={onKeyPress}
               placeholder="Ask anything about the content of the indexes"
               className="resize-none min-h-[60px] border-0 focus:ring-0 text-base px-4 py-4 pr-12 w-full bg-background text-foreground placeholder:text-muted-foreground focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-50 transition-shadow"
               disabled={isLoading}
               data-enable-grammarly="false"
+              autoFocus
             />
             <div className="absolute bottom-3 right-3 flex items-center space-x-2">
               <button
