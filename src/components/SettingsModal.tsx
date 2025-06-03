@@ -20,6 +20,7 @@ interface SettingsModalProps {
 const SettingsModal = ({ isOpen, onClose }: SettingsModalProps) => {
   const [apiUrl, setApiUrl] = useState('');
   const [apiKey, setApiKey] = useState('');
+  const [chatName, setChatName] = useState('');
   const [model, setModel] = useState('');
   const [temperature, setTemperature] = useState('0.7');
   const [maxTokens, setMaxTokens] = useState('1000');
@@ -29,6 +30,7 @@ const SettingsModal = ({ isOpen, onClose }: SettingsModalProps) => {
     if (isOpen) {
       setApiUrl(localStorage.getItem('api_url') || '');
       setApiKey(localStorage.getItem('api_key') || '');
+      setChatName(localStorage.getItem('chat_name') || '');
       setModel(localStorage.getItem('model') || OPENAI_CONFIG.model);
       setTemperature(localStorage.getItem('temperature') || OPENAI_CONFIG.defaultParams.temperature.toString());
       setMaxTokens(localStorage.getItem('max_tokens') || OPENAI_CONFIG.defaultParams.max_tokens.toString());
@@ -39,6 +41,7 @@ const SettingsModal = ({ isOpen, onClose }: SettingsModalProps) => {
     // Save settings to localStorage
     localStorage.setItem('api_url', apiUrl);
     localStorage.setItem('api_key', apiKey);
+    localStorage.setItem('chat_name', chatName);
     localStorage.setItem('model', model);
     localStorage.setItem('temperature', temperature);
     localStorage.setItem('openai_max_tokens', maxTokens);
@@ -80,6 +83,18 @@ const SettingsModal = ({ isOpen, onClose }: SettingsModalProps) => {
             />
             <p className="text-xs text-muted-foreground">
               Your Meilisearch API key or tenant token to access the chat functionnality.
+            </p>
+          </div>
+          <div className="grid gap-2">
+            <Label htmlFor="chat-name">Chat Name</Label>
+            <Input
+              id="chat-name"
+              value={chatName}
+              onChange={(e) => setChatName(e.target.value)}
+              placeholder="my-chat"
+            />
+            <p className="text-xs text-muted-foreground">
+              The chat name used in the URL path: /chats/$chatname/chat/completions
             </p>
           </div>
           <div className="grid gap-2">

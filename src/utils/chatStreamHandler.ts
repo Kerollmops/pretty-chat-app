@@ -56,7 +56,7 @@ export class ChatStreamHandler {
       setIsSearching(false);
       setIsLoading(true);
 
-      const openAIService = OpenAIService.getInstance(OPENAI_CONFIG.apiUrl, OPENAI_CONFIG.apiKey);
+      const openAIService = OpenAIService.getInstance(OPENAI_CONFIG.apiUrl, OPENAI_CONFIG.apiKey, OPENAI_CONFIG.chatName);
       const tools = createChatTools();
       const conversationMessages = this.conversationManager.getMessages();
       await openAIService.streamChatCompletions(

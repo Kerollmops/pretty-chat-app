@@ -15,6 +15,9 @@ export const OPENAI_CONFIG = {
   apiKey: getStoredValue('api_key', import.meta.env.VITE_OPENAI_API_KEY || ''),
 
   apiUrl: getStoredValue('api_url', 'http://localhost:7700'),
+  
+  // Chat name for URL path /chats/$chatname/chat/completions
+  chatName: getStoredValue('chat_name', 'default'),
 
   // Default parameters for chat completions
   defaultParams: {
@@ -36,6 +39,7 @@ export const isConfigValid = (): boolean => {
   // Refresh config from localStorage in case it was updated
   if (typeof window !== 'undefined') {
     OPENAI_CONFIG.apiKey = localStorage.getItem('api_key') || OPENAI_CONFIG.apiKey;
+    OPENAI_CONFIG.chatName = localStorage.getItem('chat_name') || OPENAI_CONFIG.chatName;
   }
   return !!OPENAI_CONFIG.apiKey;
 };

@@ -42,8 +42,10 @@ export interface ToolCall {
 class OpenAIService {
   private static instance: OpenAIService;
   private client: OpenAI;
+  private chatName: string;
 
-  private constructor(baseURL: string, apiKey: string) {
+  private constructor(baseURL: string, apiKey: string, chatName: string) {
+    this.chatName = chatName;
     this.client = new OpenAI({
       apiKey,
       baseURL,
@@ -51,9 +53,10 @@ class OpenAIService {
     });
   }
 
-  public static getInstance(baseURL: string, apiKey: string): OpenAIService {
-    if (!OpenAIService.instance) {
-      OpenAIService.instance = new OpenAIService(baseURL, apiKey);
+  public static getInstance(baseURL: string, apiKey: string, chatName: string = 'default'): OpenAIService {
+    if (!OpenAIService.instance || 
+        OpenAIService.instance.chatName !== chatName) {
+      OpenAIService.instance = new OpenAIService(baseURL, apiKey, chatName);
     }
     return OpenAIService.instance;
   }
@@ -72,6 +75,9 @@ class OpenAIService {
     onComplete: () => void
   ): Promise<void> {
     try {
+      // Use the chat name in the URL path
+      const path = `/chats/${this.chatName}/chat/completions`;
+      
       const stream = await this.client.chat.completions.create({
         model: options.model,
         messages: options.messages as OpenAI.ChatCompletionMessageParam[],
@@ -80,7 +86,7 @@ class OpenAIService {
         stream: true,
         tools: options.tools as OpenAI.ChatCompletionTool[],
         tool_choice: options.tool_choice as OpenAI.ChatCompletionToolChoiceOption,
-      });
+      }, { path });
 
       // Process the stream using the OpenAI SDK
       for await (const chunk of stream) {
@@ -132,6 +138,9 @@ class OpenAIService {
   public async getChatCompletions(
     options: Omit<StreamOptions, 'stream'>
   ): Promise<OpenAI.Chat.Completions.ChatCompletion> {
+    // Use the chat name in the URL path
+    const path = `/chats/${this.chatName}/chat/completions`;
+    
     const response = await this.client.chat.completions.create({
       model: options.model,
       messages: options.messages as OpenAI.ChatCompletionMessageParam[],
@@ -140,7 +149,7 @@ class OpenAIService {
       stream: false,
       tools: options.tools as OpenAI.ChatCompletionTool[],
       tool_choice: options.tool_choice as OpenAI.ChatCompletionToolChoiceOption,
-    });
+    }, { path });
 
     return response;
   }
