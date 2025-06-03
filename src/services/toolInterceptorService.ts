@@ -39,16 +39,10 @@ export interface MeiliSearchSourcesParams {
   sources: Array<object>;
 }
 
-export interface MeiliReportErrorParams {
-  error_code: string;
-  message: string;
-}
-
 interface ToolFunctions {
   _meiliSearchProgress: (params: MeiliSearchProgressParams) => void;
   _meiliAppendConversationMessage: (params: MeiliAppendConversationMessageParams) => void;
   _meiliSearchSources: (params: MeiliSearchSourcesParams) => void;
-  _meiliReportError: (params: MeiliReportErrorParams) => void;
 }
 
 class ToolInterceptorService {
@@ -89,11 +83,6 @@ class ToolInterceptorService {
         console.log('Intercepted _meiliSearchSources:', params);
         // Dummy implementation - just log the call
       },
-
-      _meiliReportError: (params: MeiliReportErrorParams) => {
-        console.log('Intercepted _meiliReportError:', params);
-        // Dummy implementation - just log the call
-      }
     };
 
     // Register the tools on the global window object

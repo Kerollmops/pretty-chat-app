@@ -106,26 +106,5 @@ export const createChatTools = (): Tool[] => [
         required: ["call_id", "documents"]
       }
     }
-  },
-  {
-    type: "function",
-    function: {
-      name: "_meiliReportError",
-      description: "Report dynamic errors that can happen while talking to the LLM",
-      parameters: {
-        type: "object",
-        properties: {
-          error_code: {
-            type: "string",
-            description: "An error string that eases detecting the kind of error that happened"
-          },
-          message: {
-            type: "string",
-            description: "An error message to help understand what happened"
-          }
-        },
-        required: ["error_code", "message"]
-      }
-    }
   }
 ];

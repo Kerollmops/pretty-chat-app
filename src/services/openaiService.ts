@@ -121,14 +121,6 @@ class OpenAIService {
       }
     } catch (error) {
       console.error('Error processing tool call:', error);
-
-      // Report error using the error reporting tool if available
-      if (typeof window['_meiliReportError'] === 'function') {
-        window['_meiliReportError']({
-          error_code: 'TOOL_CALL_ERROR',
-          message: error instanceof Error ? error.message : 'Unknown error processing tool call'
-        });
-      }
     }
   }
 
